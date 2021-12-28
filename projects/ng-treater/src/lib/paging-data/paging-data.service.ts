@@ -4,7 +4,6 @@ import { Injectable, Optional, Inject } from '@angular/core';
 import { switchMap, map, multicast, tap, filter, catchError, pluck } from 'rxjs/operators';
 
 import { DataLoadingState, Setting } from './data.interface';
-
 import { PAGING_DATA_SETTING } from '../injection';
 
 interface Page{
@@ -25,7 +24,7 @@ interface Filter {
 export class PagingDataService<D, F = Filter> {  
 
   private page: Page          = {};
-  private filters: Filter     = {};
+  private filterQuerys: Filter= {};
   private settings: Setting   = {};
   private listCache: D[]      = [];
   private totalNums$          = new Subject<number>();
@@ -39,11 +38,12 @@ export class PagingDataService<D, F = Filter> {
     this.settings = {
       method: 'post',
       startPage: 1, 
-      pageSize: 10, 
+      pageSize: 10,
       pageNames: ['pageNo', 'pageSize'],
       isWaterFall: true, 
       plucker:['data'],
-      totalNums: 'total'  
+      totalNums: 'total',
+      totalName: ['total']
     }
   }  
 
@@ -71,7 +71,19 @@ export class PagingDataService<D, F = Filter> {
                       )
             }),  
             filter( res => Boolean(res)) ,       
-            tap<any>( res => this.totalNums$.next( res.data[this.settings.totalNums] ) ) , 
+            tap<any>( res => {
+              let total: number, pluck = this.settings.pageInfoPlucker;              
+              if(!pluck || !pluck.length) {
+                total = res[this.settings.totalNums];
+              } else {
+                let obj = res;
+                pluck.forEach(k => {
+                  obj = obj[k];
+                  total = obj[this.settings.totalNums] as number;
+                })
+              }
+              this.totalNums$.next( res.data[this.settings.totalNums] )
+            }  ) , 
             pluck<unknown, D[]>( ...this.settings.plucker ),
             tap( data => this.loadingState$.next(this.getLoadingState(data.length)) ),             
             filter( data => Boolean(data.length) || (!data.length && this.page.pageNo === this.settings.startPage) ),
@@ -91,7 +103,7 @@ export class PagingDataService<D, F = Filter> {
 
   private getLoadingState(length?: number | null): DataLoadingState {
     if(length === null) {
-      return this.page.pageNo === this.settings.startPage ? 'initPending' : 'pagePending'
+      return this.page.pageNo === this.settings.startPage ? 'initPending' : 'pagePending';
     }
     if(!length && this.page.pageNo === this.settings.startPage) return 'none'    
     if(length && this.page.pageNo === this.settings.startPage){    
@@ -101,25 +113,32 @@ export class PagingDataService<D, F = Filter> {
         return 'initSuccess' 
       }             
     }     
-    if(length && length === this.page.pageSize) return 'pageSuccess'    
-    if(length < this.page.pageSize) return 'end'    
+    if(length && length === this.page.pageSize) return 'pageSuccess';    
+    if(length < this.page.pageSize) return 'end';    
   }
 
   private requestTo() {
+    let pagingQuerys: any = { };
+    if(this.settings.useSkip) {
+      pagingQuerys.skip   = (this.page.pageNo - this.settings.startPage) * this.settings.pageSize;
+      pagingQuerys.limit  = this.page.pageSize;
+    } else {
+      pagingQuerys[this.settings.pageNames[0]] = this.page.pageNo;
+      pagingQuerys[this.settings.pageNames[1]] = this.page.pageSize;
+    }
     this.requester$.next({      
-      [this.settings.pageNames[0]]: this.page.pageNo,
-      [this.settings.pageNames[1]]: this.page.pageSize,
-      ...this.filters
+      ...pagingQuerys,
+      ...this.filterQuerys
     })
   }
 
-  // 条件筛选
+  /** 条件筛选 */
   filter(querys: F) {
-    this.page.pageNo  = this.settings.startPage
-    this.filters      = Object.assign(this.filters, querys)    
-    this.listCache    = []
-    if( querys === null ) this.filters = {}   
-    this.requestTo()
+    this.page.pageNo  = this.settings.startPage; //筛选条件改变时，页码重置
+    this.filterQuerys = Object.assign(this.filterQuerys, querys);
+    this.listCache    = [];
+    if( querys === null ) this.filterQuerys = {};
+    this.requestTo();
   }
 
   // 加载下一页数据
@@ -135,19 +154,29 @@ export class PagingDataService<D, F = Filter> {
 
   // 加载指定页数据
   gotoPage(num: number) {
-    this.page.pageNo = num
-    this.requestTo()
+    if(!this.settings.isWaterFall) {
+      this.page.pageNo = num;
+      this.requestTo();
+    } else {
+      console.error('瀑布流加载的数据不能调用gotoPage方法')
+    }    
   }
 
-  // 刷新(重新从第一页请求数据)
+  /** 保留当前页码及筛选条件下刷新 */
+  fresh() {
+    if(this.settings.isWaterFall) this.page.pageNo = this.settings.startPage; //瀑布流模式下页码需要重置
+    this.requestTo();
+  }
+
+  /** 刷新(清除筛选条件及重置页码) */
   refresh() {
-    this.filters = {} 
-    this.listCache   = []
-    this.page.pageNo = this.settings.startPage 
-    this.requestTo()
+    this.filterQuerys = {}; 
+    this.listCache    = [];
+    this.page.pageNo  = this.settings.startPage;
+    this.requestTo();
   }
 
-  // 获取服务端数据的条目总数
+  /** 获取服务端数据的条目总数 */
   getTotalNums() {
     return this.totalNums$
   }

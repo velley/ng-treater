@@ -1,9 +1,9 @@
 // 第一页的加载状态和第二页以后的加载状态需要区分
 export type DataLoadingState = 
-  'initPending' | 
-  'pagePending' | 
-  'none'        | 
-  'initSuccess' | 
+  'initPending' |  //初次加载中
+  'pagePending' |  //后续页码加载中
+  'none'        |  //数据为空
+  'initSuccess' |  //初次加载成功
   'pageSuccess' | 
   'end'         | 
   'initEnd'     |
@@ -12,12 +12,13 @@ export type DataLoadingState =
 
 export interface Setting {
   method?: 'post' | 'get',
-  startPage?: number;
+  startPage?: 0 | 1;
   pageSize?: number;
   isWaterFall?: boolean;
   plucker?: string[];
   totalNums?: string;
-  pageNames?: [string, string],
+  totalName?: string[];
+  pageNames?: [string, string], 
   pendingImgPath?: string;
   pendingText?: string;
   emptyImgPath?: string;
@@ -25,5 +26,6 @@ export interface Setting {
   failedImgPath?: string;  
   failedText?: string;
   retry?: boolean;
+  useSkip?: boolean;
   [prop: string]: any
 }

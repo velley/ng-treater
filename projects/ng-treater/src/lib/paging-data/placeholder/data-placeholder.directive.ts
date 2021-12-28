@@ -31,7 +31,7 @@ export class DataPlaceHolderDirective implements OnInit  {
   }
 
   ngOnInit() {    
-    if(!this.PagingDataService) console.error('未找到listDatService服务, DataPlaceHolder指令无法生效')
+    if(!this.PagingDataService) console.error('未找到pagingDatService服务, DataPlaceHolder指令无法生效')
     this.watchLoadingState()
   }
 
