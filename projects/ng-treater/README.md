@@ -15,6 +15,7 @@ This library was generated with [Angular CLI](https://github.com/angular/angular
 + 在组件的constructor构造器中注入服务，然后根据实际需要调用服务的create方法，传入请求地址和初始参数，并订阅返回的Observable对象(一个组件中只能调用一次create方法)
 + 可以在组件模板中使用ntScrollLoading/ntDataPlaceHolder指令分别实现滚动加载和占位图提示的功能
 + 可以在该组件所属的特性模块或者根模块提供一个分页配置服务，该服务令牌为 PAGING_DATA_SETTING,下面为使用示例：  
+``` ts
   // import { PAGING_DATA_SETTING } from 'ng-treater';  
   { provide: PAGING_DATA_SETTING,  
     useValue:{  
@@ -30,7 +31,7 @@ This library was generated with [Angular CLI](https://github.com/angular/angular
       failedText: 'assets/data_loading_error.png' //请求失败的文字提示  
     }  
   },  
-  
+```  
 # 资料参考
 [点击此处查看pagingDataService及相关指令的实现思路](https://zhuanlan.zhihu.com/p/165118088)
 
