@@ -1,7 +1,7 @@
 import { Component, Optional, Inject } from '@angular/core';
-import { DataLoadingState, Setting } from '../data.interface';
-import { PAGING_DATA_SETTING } from '../../injection';
-import { PagingDataService } from '../paging-data.service';
+import { DataLoadingState, Setting } from '../../../paging-data/data.interface';
+import { PAGING_DATA_SETTING } from '../../../injection';
+import { PagingDataService } from '../../../paging-data/paging-data.service';
 
 @Component({  
   template:`

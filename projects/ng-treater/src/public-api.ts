@@ -13,7 +13,7 @@ export { PagingDataModule } from './lib/paging-data/paging-data.module'
 export * from './lib/injection';
 
 // 导出指令
-export * from './lib/paging-data/placeholder/data-placeholder.directive';
-export * from './lib/paging-data/placeholder/data-placeholder.component';
+export * from './lib/share/directives/placeholder/data-placeholder.directive';
+export * from './lib/share/directives/placeholder/data-placeholder.component';
 export * from './lib/paging-data/scroll-loading/scroll-loading.directives';
 export * from './lib/paging-data/scroll-loading/scroll-loading.component';

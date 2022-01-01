@@ -1,18 +1,15 @@
 import { 
   Directive,   
   ComponentFactoryResolver, 
-  ApplicationRef, 
   Injector, 
   ElementRef, 
   Component, 
   ComponentRef, 
   OnInit,
   OnDestroy,
-  Optional,
-  Input
 } from '@angular/core';
-import { fromEvent, Subject } from 'rxjs';
-import { switchMap, filter, switchMapTo, takeUntil } from 'rxjs/operators';
+import { fromEvent } from 'rxjs';
+import { filter, switchMapTo, takeUntil } from 'rxjs/operators';
 
 @Directive({
   selector: '[ntPullDownRefresh]',
