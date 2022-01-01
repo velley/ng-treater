@@ -1,26 +1,18 @@
 import { NgModule } from "@angular/core";
-import { DataPlaceHolderDirective } from '../share/directives/placeholder/data-placeholder.directive';
-import { PlaceHolder } from '../share/directives/placeholder/data-placeholder.component';
-import { ScrollLoadingDirective } from './scroll-loading/scroll-loading.directives';
-import { ScrollLoadingBox } from './scroll-loading/scroll-loading.component';
-import { CommonModule } from '@angular/common';
+import { ScrollLoadingDirective } from './directives/scroll-loading.directive';
+import { ShareModule } from "../share/share.module";
+import { PagingContainerDirective } from "./directives/pagingContainer.directive";
 
 @NgModule({
   declarations:[
-    DataPlaceHolderDirective,
+    PagingContainerDirective,
     ScrollLoadingDirective,
-    PlaceHolder,
-    ScrollLoadingBox
   ],  
-  entryComponents:[
-    PlaceHolder,
-    ScrollLoadingBox
-  ],
   imports:[
-    CommonModule
+    ShareModule
   ],
   exports:[
-    DataPlaceHolderDirective,
+    PagingContainerDirective,
     ScrollLoadingDirective      
   ]
 }) 

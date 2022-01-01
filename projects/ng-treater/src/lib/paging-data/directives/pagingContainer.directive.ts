@@ -1,8 +1,7 @@
 import { Directive, EventEmitter, Inject, Input, OnDestroy, OnInit, Output } from "@angular/core";
-import { ConnectableObservable, Observable } from "rxjs";
-import { NG_TREATER_SETTINGS } from "../injection";
-import { NgTreaterSetting, PagingSetting } from "../interface";
-import { PagingDataService } from "./paging-data.service";
+import { ConnectableObservable } from "rxjs";
+import { PagingSetting } from "../../interface";
+import { PagingDataService } from "../paging-data.service";
 
 @Directive({
   selector: '[ntPagingContainer]',
@@ -54,12 +53,12 @@ export class PagingContainerDirective  implements OnInit, OnDestroy{
     this.paging.fresh()
   }
 
-  refresh() {
-    this.refresh()
+  reset() {
+    this.reset()
   }
 
   addFilter(params: any) {
-    this.paging.filter(params);
+    this.paging.addFilter(params);
   }
 
 }

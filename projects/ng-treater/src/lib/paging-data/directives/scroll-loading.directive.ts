@@ -1,5 +1,6 @@
 import { 
   Directive, 
+  Component,
   ComponentFactoryResolver, 
   ApplicationRef, 
   Injector, 
@@ -10,13 +11,12 @@ import {
   Optional,  
   SkipSelf
 } from '@angular/core';
-import { fromEvent, Subject } from 'rxjs';
-import { debounceTime, takeUntil, distinctUntilChanged, filter, take } from 'rxjs/operators';
-import { DataLoadingState } from '../data.interface';
+import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
+import { debounceTime, takeUntil, distinctUntilChanged, first } from 'rxjs/operators';
+import { DataLoadingEnum } from '../../interface';
 import { PagingDataService } from '../paging-data.service';
-import { ScrollLoadingBox } from './scroll-loading.component'
 
-type state = DataLoadingState
+
 @Directive({
   selector: '[ntScrollLoading]',
 })
@@ -24,7 +24,7 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
   
   loadingDom: HTMLElement;
   loadingDomRef: ComponentRef<ScrollLoadingBox>;
-  loadingState$: Subject<state>; 
+  loadingState$: BehaviorSubject<DataLoadingEnum>; 
   end$ = new Subject()
 
   constructor(
@@ -55,15 +55,14 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
   insertLoadingDom() {
     const factory       = this.cfr.resolveComponentFactory(ScrollLoadingBox)
     this.loadingDom     = document.createElement('loading')
-    this.loadingDomRef  = factory.create(this.injector,[],this.loadingDom)   
+    this.loadingDomRef  = factory.create(this.injector,[],this.loadingDom);
     // 在加载第一页数据成功后，再初始化插入底部提示 
     this.loadingState$
       .pipe(
-        filter( state => ['initEnd','initSuccess'].includes(state)),
-        take(1)
+        first(state => [DataLoadingEnum.SUCCESS, DataLoadingEnum.END, DataLoadingEnum.FAILED].includes(state))
       ).subscribe( _ => {
-        this.appRef.attachView(this.loadingDomRef.hostView)
-        this.hostEl.appendChild(this.loadingDom)
+        this.appRef.attachView(this.loadingDomRef.hostView);
+        this.hostEl.appendChild(this.loadingDom);
       })
   }
 
@@ -89,21 +88,21 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
         takeUntil(this.end$)
       )
       .subscribe(state => {
+        if(this.pagingDataService.isFirstPage) return;
         switch(state) {
           default:
-          case 'initSuccess':
-          case 'pageSuccess':
+          case DataLoadingEnum.SUCCESS:
             this.loadingDomRef.instance.text = '加载更多';
-            this.loadingDomRef.instance.clickLoad = true;
+            this.loadingDomRef.instance.clickType = 'more';
           break;
-          case 'initEnd':
-          case 'end':
+          case DataLoadingEnum.END:
             this.loadingDomRef.instance.text = '- 已经到底啦 -';  
           break;          
-          case 'pageError':
+          case DataLoadingEnum.FAILED:
             this.loadingDomRef.instance.text = '加载失败!';
+            this.loadingDomRef.instance.clickType = 'retry';
           break;
-          case 'pagePending':
+          case DataLoadingEnum.PENDING:
             this.loadingDomRef.instance.text = '加载中...';
           break;
         }
@@ -111,3 +110,41 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
   }
 }
 
+@Component({
+  template:`
+    <div class="container">
+      <span (click)="onClick()">{{text}}</span>
+    </div>    
+  `,
+  styles:[`
+    :host{
+      flex: 100%;
+      width: 100%;
+    }
+    .container{      
+      flex:1 1;
+      margin-top: 15px;
+      text-align: center;
+      padding: 5px 0;
+      min-height: 15px;
+      color: #999;
+    }
+    span{
+      cursor:pointer;
+    }
+  `]  
+})
+export class ScrollLoadingBox {
+
+  text: string ;
+  clickType: 'more' | 'retry';
+
+  constructor(
+    @Optional() @SkipSelf() private pagingDataService: PagingDataService<unknown>
+  ) {}
+
+  onClick() {
+    if(!this.clickType) return;
+    this.clickType === 'more' ? this.pagingDataService.nextPage() : this.pagingDataService.retry();
+  }
+}
