@@ -1,0 +1,16 @@
+<div  
+  class="container"
+  ntPagingContainer
+  ntScrollLoading
+  #paging="paging"
+  url="/miniapp/queryOrganization"  
+>
+  <ng-container *ntDataPlaceHolder>
+    <div class="item" *ngFor="let item of paging.data$ | async">
+      {{item.name}}
+    </div>
+  </ng-container>  
+</div>
+<div class="operators" style="text-align: right;padding:10px;width: 120px;">
+  <button (click)="paging.reset()">刷新</button>
+</div>

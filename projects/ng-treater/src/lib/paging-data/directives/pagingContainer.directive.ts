@@ -1,11 +1,12 @@
-import { Directive, EventEmitter, Inject, Input, OnDestroy, OnInit, Output } from "@angular/core";
+import { Directive, EventEmitter, Inject, Input, OnDestroy, OnInit, Optional, Output, Self } from "@angular/core";
 import { ConnectableObservable } from "rxjs";
 import { PagingSetting } from "../../interface";
 import { PagingDataService } from "../paging-data.service";
+import { ScrollLoadingDirective } from "./scroll-loading.directive";
 
 @Directive({
   selector: '[ntPagingContainer]',
-  exportAs: 'ntPagingContainer',
+  exportAs: 'paging',
   providers: [PagingDataService]
 })
 export class PagingContainerDirective  implements OnInit, OnDestroy{
@@ -19,7 +20,8 @@ export class PagingContainerDirective  implements OnInit, OnDestroy{
   controller: PagingDataService<unknown>;
 
   constructor(
-    private paging: PagingDataService<unknown>
+    private paging: PagingDataService<unknown>,
+    @Optional() @Self() private scroll: ScrollLoadingDirective //注入该指令仅用作判断当前视图是否需要滚动加载
   ) {
 
   }
@@ -29,7 +31,7 @@ export class PagingContainerDirective  implements OnInit, OnDestroy{
       console.warn('未传入url请求地址,无法发送分页请求');
       return;
     }
-    this.data$ = this.paging.create(this.url, this.querys);
+    this.data$ = this.paging.create(this.url, this.querys, {scrollLoading: !!this.scroll});
     this.ready.emit(this.data$);
   } 
 
@@ -54,7 +56,7 @@ export class PagingContainerDirective  implements OnInit, OnDestroy{
   }
 
   reset() {
-    this.reset()
+    this.paging.reset()
   }
 
   addFilter(params: any) {

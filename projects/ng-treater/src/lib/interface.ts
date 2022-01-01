@@ -1,4 +1,4 @@
-import { ComponentRef, TemplateRef, Type } from "@angular/core";
+import { Type } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
 
 /** 针对ng-treater/pagingDataWrapper分页查询逻辑的设置项 */

@@ -6,7 +6,8 @@
 export * from './lib/paging-data/paging-data.service';
 
 // 导出模块
-export { PagingDataModule } from './lib/paging-data/paging-data.module'
+export { PagingDataModule } from './lib/paging-data/paging-data.module';
+export { ShareModule as NtShare } from './lib/share/share.module';
 
 // 导出令牌与类型接口
 export * from './lib/injection';

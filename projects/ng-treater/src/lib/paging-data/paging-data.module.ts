@@ -13,7 +13,8 @@ import { PagingContainerDirective } from "./directives/pagingContainer.directive
   ],
   exports:[
     PagingContainerDirective,
-    ScrollLoadingDirective      
+    ScrollLoadingDirective,
+    ShareModule  
   ]
 }) 
 export class PagingDataModule {

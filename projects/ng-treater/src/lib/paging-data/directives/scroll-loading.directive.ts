@@ -12,7 +12,7 @@ import {
   SkipSelf
 } from '@angular/core';
 import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
-import { debounceTime, takeUntil, distinctUntilChanged, first } from 'rxjs/operators';
+import { debounceTime, takeUntil, distinctUntilChanged, first, switchMapTo, tap, filter } from 'rxjs/operators';
 import { DataLoadingEnum } from '../../interface';
 import { PagingDataService } from '../paging-data.service';
 
@@ -32,7 +32,7 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
     private cfr: ComponentFactoryResolver,
     private appRef: ApplicationRef,
     private injector: Injector,
-    @Optional() @SkipSelf() private pagingDataService: PagingDataService<unknown>
+    @Optional() private pagingDataService: PagingDataService<unknown>
   ) {    
     this.loadingState$  = this.pagingDataService?.loadingState$    
   }
@@ -42,7 +42,7 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
   } 
 
   ngOnInit() {
-    if(!this.pagingDataService) console.error('未找到ListDatService服务, ScrollLoading指令无法生效')
+    if(!this.pagingDataService) console.error('未找到PagingDatService服务, ScrollLoading指令无法生效')
     this.insertLoadingDom()    
     this.bindScrollEvent()
     this.listenLoading()
@@ -58,21 +58,22 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
     this.loadingDomRef  = factory.create(this.injector,[],this.loadingDom);
     // 在加载第一页数据成功后，再初始化插入底部提示 
     this.loadingState$
-      .pipe(
+      .pipe(        
         first(state => [DataLoadingEnum.SUCCESS, DataLoadingEnum.END, DataLoadingEnum.FAILED].includes(state))
       ).subscribe( _ => {
         this.appRef.attachView(this.loadingDomRef.hostView);
-        this.hostEl.appendChild(this.loadingDom);
+        this.hostEl.appendChild(this.loadingDom);        
       })
   }
 
   bindScrollEvent() {        
     fromEvent(this.hostEl,'scroll')
       .pipe(
-        debounceTime(250),        
+        debounceTime(350),        
         takeUntil(this.end$)
       )
       .subscribe( _ => {        
+        if(this.pagingDataService.loadingState$.value === DataLoadingEnum.PENDING) return;
         const topIns = this.hostEl.scrollTop
         const bottomIns = this.hostEl.scrollHeight - topIns - this.hostEl.offsetHeight   
         if(bottomIns < 20) {  
@@ -84,11 +85,15 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
   listenLoading() {        
     this.loadingState$
       .pipe(        
-        distinctUntilChanged(),        
+        distinctUntilChanged(),
         takeUntil(this.end$)
       )
       .subscribe(state => {
-        if(this.pagingDataService.isFirstPage) return;
+        if(this.pagingDataService.isFirstPage && state === DataLoadingEnum.PENDING) {
+          this.loadingDom.style.display = 'none'
+        } else {
+          this.loadingDom.style.display = 'block';
+        };
         switch(state) {
           default:
           case DataLoadingEnum.SUCCESS:

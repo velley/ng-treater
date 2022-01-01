@@ -6,10 +6,14 @@ import { NG_TREATER_SETTINGS } from '../injection';
 import { DataLoadingEnum, NgTreaterSetting, PagingSetting } from '../interface';
 
 interface Page{
+  /** 当前所在页码 */
   pageNo?:number,
-  pageSize?: number,
-  currentNo?: number,
-  total?: number  
+  /** 当前页数量 */
+  pageSize?: number,  
+  /** 数据总是 */
+  total?: number,
+  /** 即将进入的页码 */
+  nextNo?: number
 }
 
 interface Filter {  
@@ -35,17 +39,17 @@ const DEFAULT_SETTING: NgTreaterSetting = {
 */
 @Injectable()
 export class PagingDataService<D, F = Filter> {  
-
-  private page: Page                   = {};
+ 
   private filters: Filter              = {};
   private settings: NgTreaterSetting   = {};
   private listCache: D[]               = [];  
   private requester$                   = new Subject<Filter> ();
+  public page: Page                    = {};
   public  totalNums$                   = new Observable<number>(); 
   public  loadingState$                = new BehaviorSubject<DataLoadingEnum> (DataLoadingEnum.PENDING);
 
   get isFirstPage() {
-    return this.page.pageNo === this.settings.paging.start;
+    return this.page.nextNo === this.settings.paging.start;
   }
 
   constructor(     
@@ -56,9 +60,12 @@ export class PagingDataService<D, F = Filter> {
   }  
 
   // 根据传入的url请求地址，创建并返回列表数据的可观察对象
-  create(url: string, querys: Filter = {}, pagingSetting?: PagingSetting ) {    
-
-    Object.assign(this.settings, this.globalSetting, {paging: pagingSetting})   //合并配置
+  create(url: string, querys: Filter = {}, pagingSetting?: Partial<PagingSetting>) {    
+    // 合并配置
+    this.globalSetting && Object.assign(this.settings, this.globalSetting)  
+    pagingSetting && Object.assign(this.settings.paging, pagingSetting);
+    console.log('setting', this.settings)
+    this.page.nextNo    = this.settings.paging.start;
     this.page.pageNo    = this.settings.paging.start;
     this.page.pageSize  = this.settings.paging.size;
 
@@ -93,7 +100,7 @@ export class PagingDataService<D, F = Filter> {
             tap<any>( res => {
               this.totalNums$ = of(res).pipe(pluck(...this.settings.paging.totalPlucker))
             }) , 
-            pluck<unknown, D[]>( ...this.settings.paging.dataPlucker ),
+            pluck<unknown, D[]>( ...this.settings.paging.dataPlucker || [] ),
             tap( data => this.loadingState$.next(this.getLoadingState(data.length)) ),             
             filter( data => Boolean(data.length) || (!data.length && this.isFirstPage) ),
             map( data => this.settings.paging.scrollLoading ? this.listCache.concat(data) : data ),            
@@ -108,17 +115,17 @@ export class PagingDataService<D, F = Filter> {
 
   /** 根据服务端返回的列表数据长度和分页信息来得到当前的分页请求状态 */
   private getLoadingState(length?: number): DataLoadingEnum {
-    if(length < this.settings.paging.size) {
+    if(length <= this.settings.paging.size) {
       return DataLoadingEnum.SUCCESS
     } else {
       return DataLoadingEnum.END
     }    
   }
 
-  private requestTo(page?: Page) {
+  private requestTo() {
     let pagingQuerys: any = { };
-    pagingQuerys[this.settings.paging.indexKey] = page?.pageNo || this.page.pageNo;
-    pagingQuerys[this.settings.paging.sizeKey]  = page?.pageSize || this.page.pageSize;
+    pagingQuerys[this.settings.paging.indexKey] =  this.page.nextNo;
+    pagingQuerys[this.settings.paging.sizeKey]  =  this.page.pageSize;
     this.requester$.next({      
       ...pagingQuerys,
       ...this.filters
@@ -139,19 +146,22 @@ export class PagingDataService<D, F = Filter> {
 
   // 加载下一页数据
   nextPage() {      
-    this.requestTo({pageNo: this.page.pageNo + 1});
+    this.page.nextNo = this.page.pageNo + 1;
+    this.requestTo();
   }
 
   // 加载上一页数据
   previousPage() {    
     if(this.isFirstPage) return;
-    this.requestTo({pageNo: this.page.pageNo - 1});
+    this.page.nextNo = this.page.pageNo - 1
+    this.requestTo();
   }
 
   // 加载指定页数据
   gotoPage(num: number) {
-    if(!this.settings.paging.scrollLoading) {      
-      this.requestTo({pageNo: num});
+    if(!this.settings.paging.scrollLoading) {   
+      this.page.nextNo = num;   
+      this.requestTo();
     } else {
       console.error('滚动加载模式下不能调用gotoPage方法')
     }    
@@ -178,9 +188,9 @@ export class PagingDataService<D, F = Filter> {
 
   /** 重置数据(清除筛选条件与重置页码后重新发送数据请求) */
   reset() {
-    this.filters = {}; 
+    this.filters      = {}; 
     this.listCache    = [];
-    this.page.pageNo  = this.settings.paging.start;
+    this.page.nextNo  = this.settings.paging.start;
     this.requestTo();
   }
 
