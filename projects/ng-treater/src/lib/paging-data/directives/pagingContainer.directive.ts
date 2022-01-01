@@ -6,7 +6,7 @@ import { ScrollLoadingDirective } from "./scroll-loading.directive";
 
 @Directive({
   selector: '[ntPagingContainer]',
-  exportAs: 'paging',
+  exportAs: 'ntPaging',
   providers: [PagingDataService]
 })
 export class PagingContainerDirective  implements OnInit, OnDestroy{

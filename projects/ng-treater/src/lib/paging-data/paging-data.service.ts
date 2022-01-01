@@ -10,10 +10,10 @@ interface Page{
   pageNo?:number,
   /** 当前页数量 */
   pageSize?: number,  
-  /** 数据总是 */
+  /** 数据总量 */
   total?: number,
-  /** 即将进入的页码 */
-  nextNo?: number
+  /** 目标页码 */
+  targetNo?: number
 }
 
 interface Filter {  
@@ -35,7 +35,7 @@ const DEFAULT_SETTING: NgTreaterSetting = {
 }
 
 /*
-  对分页数据的请求与处理逻辑可托管给此服务
+  对分页数据查询的http请求与处理逻辑可托管给此服务
 */
 @Injectable()
 export class PagingDataService<D, F = Filter> {  
@@ -44,12 +44,12 @@ export class PagingDataService<D, F = Filter> {
   private settings: NgTreaterSetting   = {};
   private listCache: D[]               = [];  
   private requester$                   = new Subject<Filter> ();
-  public page: Page                    = {};
+  public  page: Page                   = {};
   public  totalNums$                   = new Observable<number>(); 
   public  loadingState$                = new BehaviorSubject<DataLoadingEnum> (DataLoadingEnum.PENDING);
 
   get isFirstPage() {
-    return this.page.nextNo === this.settings.paging.start;
+    return this.page.targetNo === this.settings.paging.start;
   }
 
   constructor(     
@@ -59,16 +59,17 @@ export class PagingDataService<D, F = Filter> {
     this.settings = Object.create(DEFAULT_SETTING);
   }  
 
-  // 根据传入的url请求地址，创建并返回列表数据的可观察对象
-  create(url: string, querys: Filter = {}, pagingSetting?: Partial<PagingSetting>) {    
+  /** 根据传入的url请求地址，创建并返回列表数据的可观察对象 */
+  create(url: string, querys: Filter = {}, localPagingSetting?: Partial<PagingSetting>) {    
     // 合并配置
-    this.globalSetting && Object.assign(this.settings, this.globalSetting)  
-    pagingSetting && Object.assign(this.settings.paging, pagingSetting);
-    console.log('setting', this.settings)
-    this.page.nextNo    = this.settings.paging.start;
-    this.page.pageNo    = this.settings.paging.start;
+    this.globalSetting && Object.assign(this.settings, this.globalSetting);
+    localPagingSetting && Object.assign(this.settings.paging, localPagingSetting);
+
+    // 初始化分页信息
+    this.page.pageNo    = this.page.targetNo = this.settings.paging.start;
     this.page.pageSize  = this.settings.paging.size;
 
+    // 创建requeter$与publisher$
     const publisher$
       = this.requester$
           .pipe(                    
@@ -115,6 +116,7 @@ export class PagingDataService<D, F = Filter> {
 
   /** 根据服务端返回的列表数据长度和分页信息来得到当前的分页请求状态 */
   private getLoadingState(length?: number): DataLoadingEnum {
+    if(length === 0 && this.isFirstPage) return DataLoadingEnum.EMPTY;
     if(length <= this.settings.paging.size) {
       return DataLoadingEnum.SUCCESS
     } else {
@@ -124,7 +126,7 @@ export class PagingDataService<D, F = Filter> {
 
   private requestTo() {
     let pagingQuerys: any = { };
-    pagingQuerys[this.settings.paging.indexKey] =  this.page.nextNo;
+    pagingQuerys[this.settings.paging.indexKey] =  this.page.targetNo || this.page.pageNo;
     pagingQuerys[this.settings.paging.sizeKey]  =  this.page.pageSize;
     this.requester$.next({      
       ...pagingQuerys,
@@ -132,9 +134,8 @@ export class PagingDataService<D, F = Filter> {
     })
   }
 
-
   /** 添加条件筛选
-   * @param querys 需要传入的筛选json值，传入后该筛选值会被一直保存
+   * @param querys 需要传入的json筛选对象，传入后筛选数据会被一直保存
    */
   addFilter(querys: F) {
     this.page.pageNo  = this.settings.paging.start; //筛选条件改变时，页码重置为初始值
@@ -144,53 +145,53 @@ export class PagingDataService<D, F = Filter> {
     this.requestTo();
   }
 
-  // 加载下一页数据
+  /** 加载下一页数据 */
   nextPage() {      
-    this.page.nextNo = this.page.pageNo + 1;
+    this.page.targetNo = this.page.pageNo + 1;
     this.requestTo();
   }
 
-  // 加载上一页数据
+  /** 加载上一页数据(滚动加载场景下无效) */
   previousPage() {    
     if(this.isFirstPage) return;
-    this.page.nextNo = this.page.pageNo - 1
+    this.page.targetNo = this.page.pageNo - 1;
     this.requestTo();
   }
 
-  // 加载指定页数据
+  /** 加载指定页数据(滚动加载场景下无效) */ 
   gotoPage(num: number) {
     if(!this.settings.paging.scrollLoading) {   
-      this.page.nextNo = num;   
+      this.page.targetNo = num;   
       this.requestTo();
     } else {
       console.error('滚动加载模式下不能调用gotoPage方法')
     }    
   }
 
-  /** 重试(在请求失败时，调用此方法重新发送请求) */
+  /** 重试(在某次请求失败时，手动调用此方法重新发送请求) */
   retry() {
     if(this.loadingState$.value === DataLoadingEnum.FAILED) {
       this.requestTo();
     }else {
-      console.warn('retry方法仅在请求失败时可用');
+      console.warn('retry方法仅在请求失败后可用');
     }
   }
 
   /** 根据已有筛选条件重新请求 */
   fresh() {
-    //滚动加载模式下页码与数据需要重置
+    //滚动加载模式下页码与列表数据需要重置
     if(this.settings.paging.scrollLoading) {
-      this.page.pageNo = this.settings.paging.start;
-      this.listCache = [];
+      this.page.targetNo = this.settings.paging.start;
+      this.listCache   = [];
     } 
     this.requestTo();
   }
 
-  /** 重置数据(清除筛选条件与重置页码后重新发送数据请求) */
+  /** 重置(清除筛选条件与重置页码后重新发送数据请求) */
   reset() {
     this.filters      = {}; 
     this.listCache    = [];
-    this.page.nextNo  = this.settings.paging.start;
+    this.page.targetNo  = this.settings.paging.start;
     this.requestTo();
   }
 

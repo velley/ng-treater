@@ -12,7 +12,7 @@ import {
   SkipSelf
 } from '@angular/core';
 import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
-import { debounceTime, takeUntil, distinctUntilChanged, first, switchMapTo, tap, filter } from 'rxjs/operators';
+import { debounceTime, takeUntil, distinctUntilChanged, first } from 'rxjs/operators';
 import { DataLoadingEnum } from '../../interface';
 import { PagingDataService } from '../paging-data.service';
 
