@@ -1,5 +1,5 @@
-import { Directive, EventEmitter, Inject, Input, OnDestroy, OnInit, Optional, Output, Self } from "@angular/core";
-import { ConnectableObservable } from "rxjs";
+import { Directive, EventEmitter, Input, OnInit, Optional, Output, Self } from "@angular/core";
+import { ConnectableObservable, Observable } from "rxjs";
 import { PagingSetting } from "../../interface";
 import { PagingDataService } from "../paging-data.service";
 import { ScrollLoadingDirective } from "./scroll-loading.directive";
@@ -9,42 +9,38 @@ import { ScrollLoadingDirective } from "./scroll-loading.directive";
   exportAs: 'ntPaging',
   providers: [PagingDataService]
 })
-export class PagingContainerDirective  implements OnInit, OnDestroy{
+export class PagingContainerDirective  implements OnInit{
 
   @Input() url: string;
   @Input() querys: any = {};
   @Input() options: PagingSetting;
-  @Output() ready = new EventEmitter();
+  @Output() created = new EventEmitter<Observable<any[]>>();
 
   data$: ConnectableObservable<unknown[]>;
-  controller: PagingDataService<unknown>;
-
+  get total() {
+    return this.paging.total;
+  }
+  
   constructor(
     private paging: PagingDataService<unknown>,
-    @Optional() @Self() private scroll: ScrollLoadingDirective //注入该指令仅用作判断当前视图是否需要滚动加载
-  ) {
-
-  }
+    @Optional() @Self() private scroller: ScrollLoadingDirective //注入该指令仅用来判断宿主视图是否可滚动加载
+  ) {}
 
   ngOnInit(): void {
     if(!this.url) {
-      console.warn('未传入url请求地址,无法发送分页请求');
+      console.warn('未传入url地址,PagingContainerDirective内部无法发送分页请求');
       return;
     }
-    this.data$ = this.paging.create(this.url, this.querys, {scrollLoading: !!this.scroll});
-    this.ready.emit(this.data$);
+    this.data$ = this.paging.create(this.url, this.querys, {scrollLoading: !!this.scroller});
+    this.created.emit(this.data$);
   } 
-
-  ngOnDestroy(): void {
-   
-  }
 
   nextPage() {
     this.paging.nextPage();
   }
 
   previousPage() {
-    this.paging.previousPage()
+    this.paging.previousPage();
   }
 
   gotoPage(index: number) {

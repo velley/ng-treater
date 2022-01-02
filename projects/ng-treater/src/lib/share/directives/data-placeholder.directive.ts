@@ -15,11 +15,7 @@ import { NG_TREATER_SETTINGS } from '../../injection';
 import { DataLoadingEnum, DataLoadingStateTreater, NgTreaterSetting } from '../../interface';
 import { BehaviorSubject } from 'rxjs';
 
-const LOADING_STATE_MAP = {
-  'pending': '正在加载...',
-  'failed': '加载失败',
-  'empty': '暂无数据'
-}
+
 
 @Directive({
   selector: '[ntDataPlaceHolder]'
@@ -71,6 +67,11 @@ export class DataPlaceHolderDirective implements OnInit  {
   }
 }
 
+const LOADING_STATE_MAP = {
+  'pending': '正在加载...',
+  'failed': '加载失败',
+  'empty': '暂无数据'
+}
 @Component({
   template: `    
     <div class="nt-placeholder">{{ loadingTextObj[state] }}</div>    

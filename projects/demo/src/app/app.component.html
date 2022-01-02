@@ -9,7 +9,10 @@
     <div class="item" *ngFor="let item of paging.data$ | async">
       {{item.name}}
     </div>
-  </ng-container>  
+  </ng-container>    
+</div>
+<div class="total">
+  总条数:{{paging.total}}
 </div>
 <div class="operators" style="text-align: right;padding:10px;width: 120px;">
   <button (click)="paging.reset()">刷新</button>

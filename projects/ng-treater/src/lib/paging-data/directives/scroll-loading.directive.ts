@@ -43,9 +43,9 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
 
   ngOnInit() {
     if(!this.pagingDataService) console.error('未找到PagingDatService服务, ScrollLoading指令无法生效')
-    this.insertLoadingDom()    
-    this.bindScrollEvent()
-    this.listenLoading()
+    this.insertLoadingDom();    
+    this.bindScrollEvent();
+    this.listenLoading();
   }
 
   ngOnDestroy() {
@@ -56,7 +56,7 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
     const factory       = this.cfr.resolveComponentFactory(ScrollLoadingBox)
     this.loadingDom     = document.createElement('loading')
     this.loadingDomRef  = factory.create(this.injector,[],this.loadingDom);
-    // 在加载第一页数据成功后，再初始化插入底部提示 
+    // 仅在第一次请求后初始化插入底部提示节点
     this.loadingState$
       .pipe(        
         first(state => [DataLoadingEnum.SUCCESS, DataLoadingEnum.END, DataLoadingEnum.FAILED].includes(state))
@@ -73,11 +73,11 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
         takeUntil(this.end$)
       )
       .subscribe( _ => {        
-        if(this.pagingDataService.loadingState$.value === DataLoadingEnum.PENDING) return;
+        if([DataLoadingEnum.PENDING, DataLoadingEnum.END].includes(this.pagingDataService.loadingState$.value)) return;
         const topIns = this.hostEl.scrollTop
         const bottomIns = this.hostEl.scrollHeight - topIns - this.hostEl.offsetHeight   
         if(bottomIns < 20) {  
-          this.pagingDataService.nextPage()
+          this.pagingDataService.nextPage();
         } 
       })    
   }
@@ -89,7 +89,8 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
         takeUntil(this.end$)
       )
       .subscribe(state => {
-        if(this.pagingDataService.isFirstPage && state === DataLoadingEnum.PENDING) {
+        //若当前请求的分页为第一页，应暂时隐藏底部加载提示
+        if(this.pagingDataService.isFirstPage) {
           this.loadingDom.style.display = 'none'
         } else {
           this.loadingDom.style.display = 'block';
@@ -136,6 +137,7 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
     }
     span{
       cursor:pointer;
+      font-size: 14px;
     }
   `]  
 })

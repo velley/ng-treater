@@ -12,7 +12,7 @@ interface Page{
   pageSize?: number,  
   /** 数据总量 */
   total?: number,
-  /** 目标页码 */
+  /** 目标页码(指即将发送请求的页码) */
   targetNo?: number
 }
 
@@ -45,8 +45,8 @@ export class PagingDataService<D, F = Filter> {
   private listCache: D[]               = [];  
   private requester$                   = new Subject<Filter> ();
   public  page: Page                   = {};
-  public  totalNums$                   = new Observable<number>(); 
-  public  loadingState$                = new BehaviorSubject<DataLoadingEnum> (DataLoadingEnum.PENDING);
+  public  total: number                = 0;
+  public  loadingState$                = new BehaviorSubject<DataLoadingEnum>(DataLoadingEnum.PENDING);
 
   get isFirstPage() {
     return this.page.targetNo === this.settings.paging.start;
@@ -59,8 +59,12 @@ export class PagingDataService<D, F = Filter> {
     this.settings = Object.create(DEFAULT_SETTING);
   }  
 
-  /** 根据传入的url请求地址，创建并返回列表数据的可观察对象 */
-  create(url: string, querys: Filter = {}, localPagingSetting?: Partial<PagingSetting>) {    
+  /** 根据传入的url请求地址，向服务端发送请求，并返回可观察对象publisher$
+   * @param url 服务端请求地址
+   * @param defaultQuerys 默认请求参数(每次请求都会带上该参数，不会被reset方法清空)
+   * @param localPagingSetting 本地分页设置，可覆盖全局设置
+  */
+  create(url: string, defaultQuerys: Filter = {}, localPagingSetting?: Partial<PagingSetting>) {    
     // 合并配置
     this.globalSetting && Object.assign(this.settings, this.globalSetting);
     localPagingSetting && Object.assign(this.settings.paging, localPagingSetting);
@@ -79,10 +83,10 @@ export class PagingDataService<D, F = Filter> {
               switch(this.settings.method) {
                 default:
                 case 'post':
-                  requestMap$ = this.http.post<any>(url, {...querys, ...param});
+                  requestMap$ = this.http.post<any>(url, {...defaultQuerys, ...param});
                 break;
                 case 'get':
-                  requestMap$ = this.http.get<any>(url, {params:{...querys, ...param}});
+                  requestMap$ = this.http.get<any>(url, {params:{...defaultQuerys, ...param}});
                 break;
               }        
               return requestMap$
@@ -98,9 +102,10 @@ export class PagingDataService<D, F = Filter> {
                 )
             }),  
             // filter( res => Boolean(res)),       
-            tap<any>( res => {
-              this.totalNums$ = of(res).pipe(pluck(...this.settings.paging.totalPlucker))
-            }) , 
+            tap<any>( res => {              
+              of(res).pipe(pluck<unknown, number>(...this.settings.paging.totalPlucker))
+                .subscribe(num => this.total = num)
+            }), 
             pluck<unknown, D[]>( ...this.settings.paging.dataPlucker || [] ),
             tap( data => this.loadingState$.next(this.getLoadingState(data.length)) ),             
             filter( data => Boolean(data.length) || (!data.length && this.isFirstPage) ),
@@ -114,12 +119,12 @@ export class PagingDataService<D, F = Filter> {
     return publisher$;
   }
 
-  /** 根据服务端返回的列表数据长度和分页信息来得到当前的分页请求状态 */
-  private getLoadingState(length?: number): DataLoadingEnum {
+  /** 根据服务端返回的列表数据长度和分页信息来得到当前的请求状态 */
+  private getLoadingState(length: number): DataLoadingEnum {
     if(length === 0 && this.isFirstPage) return DataLoadingEnum.EMPTY;
-    if(length <= this.settings.paging.size) {
+    if(length === this.settings.paging.size) {
       return DataLoadingEnum.SUCCESS
-    } else {
+    } else if(length < this.settings.paging.size) {
       return DataLoadingEnum.END
     }    
   }
@@ -134,8 +139,8 @@ export class PagingDataService<D, F = Filter> {
     })
   }
 
-  /** 添加条件筛选
-   * @param querys 需要传入的json筛选对象，传入后筛选数据会被一直保存
+  /** 添加查询条件
+   * @param querys 需要传入的json查询对象，传入后会被一直保存(可调用reset方法清空)
    */
   addFilter(querys: F) {
     this.page.pageNo  = this.settings.paging.start; //筛选条件改变时，页码重置为初始值
@@ -168,6 +173,13 @@ export class PagingDataService<D, F = Filter> {
     }    
   }
 
+  /** 改变页码长度(pageSize) */
+  changeSize(size: number) {
+    this.page.pageNo   = this.settings.paging.start;
+    this.page.pageSize = size;
+    this.requestTo();
+  }
+
   /** 重试(在某次请求失败时，手动调用此方法重新发送请求) */
   retry() {
     if(this.loadingState$.value === DataLoadingEnum.FAILED) {
@@ -177,7 +189,7 @@ export class PagingDataService<D, F = Filter> {
     }
   }
 
-  /** 根据已有筛选条件重新请求 */
+  /** 根据已有查询条件重新请求 */
   fresh() {
     //滚动加载模式下页码与列表数据需要重置
     if(this.settings.paging.scrollLoading) {
@@ -187,7 +199,7 @@ export class PagingDataService<D, F = Filter> {
     this.requestTo();
   }
 
-  /** 重置(清除筛选条件与重置页码后重新发送数据请求) */
+  /** 重置(清除查询条件与重置页码后重新发送数据请求) */
   reset() {
     this.filters      = {}; 
     this.listCache    = [];
