@@ -1,5 +1,7 @@
-## <center>👉NG-TREATER👈</center>
-### <center>供angular开发者使用的分页查询插件</center>
+## <div align="center">👉NG-TREATER👈</div>
+### <div align="center">供angular开发者使用的分页查询插件</div>
+
+<br>
 
 <div align="center">
 
