@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { PagingDataService } from '../../paging-data/paging-data.service';
 import { NG_TREATER_SETTINGS } from '../../injection';
-import { DataLoadingEnum, DataLoadingStateTreater, NgTreaterSetting } from '../../interface';
+import { NtLoadingState, DataLoadingStateTreater, NgTreaterSetting } from '../../interface';
 import { BehaviorSubject } from 'rxjs';
 
 
@@ -22,7 +22,7 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class DataPlaceHolderDirective implements OnInit  {
 
-  loadingState: DataLoadingEnum;
+  loadingState: NtLoadingState;
   @ViewChild('placeholder', {read: TemplateRef}) placeholderTpl: TemplateRef<any>;
   
   constructor(
@@ -47,10 +47,10 @@ export class DataPlaceHolderDirective implements OnInit  {
         this.loadingState = state;
         /** 只需要在第一页请求时插入Placeholder占位视图 */
         if(!this.paging.isFirstPage) return;
-        if([DataLoadingEnum.PENDING, DataLoadingEnum.EMPTY, DataLoadingEnum.FAILED].includes(state)){
+        if([NtLoadingState.PENDING, NtLoadingState.EMPTY, NtLoadingState.FAILED].includes(state)){
           this.viewContainer.clear();
           this.addPlaceholder();
-        } else if([DataLoadingEnum.SUCCESS, DataLoadingEnum.END].includes(state)) {
+        } else if([NtLoadingState.SUCCESS, NtLoadingState.END].includes(state)) {
           this.viewContainer.clear();
           this.viewContainer.createEmbeddedView(this.templateRef);
         }
@@ -86,10 +86,10 @@ const LOADING_STATE_MAP = {
 })
 class PlaceholderComponent implements DataLoadingStateTreater {
   
-  state: DataLoadingEnum;
+  state: NtLoadingState;
   loadingTextObj = LOADING_STATE_MAP;
 
-  registerLoadingState(state: BehaviorSubject<DataLoadingEnum>){
+  registerLoadingState(state: BehaviorSubject<NtLoadingState>){
     state.subscribe(val => {
       this.state = val
     })

@@ -24,13 +24,13 @@ export interface NgTreaterSetting {
 /** 自定义Placeholder组件需要继承的接口 */
 export interface DataLoadingStateTreater {
   /** 注册加载状态数据 */
-  registerLoadingState: (state: BehaviorSubject<DataLoadingEnum>) => void;
+  registerLoadingState: (state: BehaviorSubject<NtLoadingState>) => void;
   /** 注册错误重试方法 */
   registerRetryFunc: (fn: any) => void;
 }
 
 /** 数据请求状态枚举 */
-export enum DataLoadingEnum {
+export enum NtLoadingState {
   /** 数据请求中*/
   PENDING = 'pending',
   /** 数据请求成功 */

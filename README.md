@@ -15,7 +15,7 @@
 ----
 
 ### ✍ 主要特性
-- 本插件将业务中最常见的分页数据查询功能进行抽象并封装为指令。使用相关指令后可以直接调用与分页查询相关的方法(如上/下一页，条件筛选，刷新等)，并能实时订阅服务端返回的分页数据。
+- 本插件将业务中最常见的分页数据查询功能进行抽象并封装为指令。使用相关指令后可通过Observable订阅服务端返回的分页数据，并能直接调用与分页查询相关的方法(如上/下一页，条件筛选，刷新等)。
 
 <br>
 
@@ -72,7 +72,7 @@ export class AppModule { }
 <br>
 
 - 使用指令<font color="yellowgreen" size="4">ntScrollLoading</font>快速实现滚动加载功能
-> 只需在容器元素上加上该指令便可生效(需要自行为元素设置滚动样式)。当容器元素滚动到底部时，指令内部会自动发起下一页请求，同时容器底部会出现对应的文本提示；请求成功后，组件模板会实时更新渲染，不需要做任何赋值操作。
+> 只需在容器元素上加上该指令便可生效(需要自行为元素设置滚动样式)。当容器元素滚动到底部时，指令内部会自动发起下一页请求，同时容器底部会出现对应的文本提示；请求成功后，组件模板会实时更新渲染数据。
 ```html
 <!-- demo.component.html -->
 <div class="container" ntPagingContainer ntScrollLoading #paging="ntPaging" url="/miniapp/queryOrganization">  
@@ -85,7 +85,7 @@ export class AppModule { }
 <br>
 
 - 使用指令<font color="yellowgreen" size="4">ntDataPlaceHolder</font>实现请求占位提示功能
-> 该指令内部会实时监听第一次请求的状态,并根据请求结果在容器元素添加占位提示,这样可以防止请求过程中界面上出现空白；同时对请求失败、请求数据为空这两种结果也会添加对应的占位提示。
+> 该指令内部会监听初次请求的状态。并根据状态(请求中/请求失败/空数据)在容器元素内添加对应占位提示,这样可以防止在数据成功渲染前界面上出现空白。
 ```html
 <!-- demo.component.html -->
 <div class="container" ntPagingContainer ntScrollLoading #paging="ntPaging" url="/miniapp/queryOrganization">  
@@ -100,7 +100,7 @@ export class AppModule { }
 > 你可以为占位提示编写一个自定义组件并传入全局配置中(因为本插件的默认占位提示仅仅是一段文字，你可能更希望占位提示是一个图标或者其他效果)。编写占位提示组件的示例如下
 ```ts
 // my-dataPlaceholder.component.ts
-import { DataLoadingEnum, DataLoadingStateTreater } from 'ng-treaterr';
+import { NtLoadingState, DataLoadingStateTreater } from 'ng-treaterr';
 
 const LOADING_STATE_MAP = {
   'pending': '正在加载...',
@@ -122,14 +122,12 @@ const LOADING_STATE_MAP = {
 })
 class PlaceholderComponent implements DataLoadingStateTreater {
   
-  state: DataLoadingEnum;
-  loadingTextObj = LOADING_STATE_MAP;
+  state: NtLoadingState;
+  loadingStateMap = LOADING_STATE_MAP;
   retry: () => void;
 
-  registerLoadingState(state: BehaviorSubject<DataLoadingEnum>){
-    state.subscribe(val => {
-      this.state = val
-    })
+  registerLoadingState(state: BehaviorSubject<NtLoadingState>){
+    state.subscribe(val => this.state = val)
   };
 
   registerRetryFunc(fn: any) {

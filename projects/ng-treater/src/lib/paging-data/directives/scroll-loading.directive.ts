@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
 import { debounceTime, takeUntil, distinctUntilChanged, first } from 'rxjs/operators';
-import { DataLoadingEnum } from '../../interface';
+import { NtLoadingState } from '../../interface';
 import { PagingDataService } from '../paging-data.service';
 
 
@@ -24,7 +24,7 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
   
   loadingDom: HTMLElement;
   loadingDomRef: ComponentRef<ScrollLoadingBox>;
-  loadingState$: BehaviorSubject<DataLoadingEnum>; 
+  loadingState$: BehaviorSubject<NtLoadingState>; 
   end$ = new Subject()
 
   constructor(
@@ -59,7 +59,7 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
     // 仅在第一次请求后初始化插入底部提示节点
     this.loadingState$
       .pipe(        
-        first(state => [DataLoadingEnum.SUCCESS, DataLoadingEnum.END, DataLoadingEnum.FAILED].includes(state))
+        first(state => [NtLoadingState.SUCCESS, NtLoadingState.END, NtLoadingState.FAILED].includes(state))
       ).subscribe( _ => {
         this.appRef.attachView(this.loadingDomRef.hostView);
         this.hostEl.appendChild(this.loadingDom);        
@@ -73,7 +73,7 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
         takeUntil(this.end$)
       )
       .subscribe( _ => {        
-        if([DataLoadingEnum.PENDING, DataLoadingEnum.END].includes(this.pagingDataService.loadingState$.value)) return;
+        if([NtLoadingState.PENDING, NtLoadingState.END].includes(this.pagingDataService.loadingState$.value)) return;
         const topIns = this.hostEl.scrollTop
         const bottomIns = this.hostEl.scrollHeight - topIns - this.hostEl.offsetHeight   
         if(bottomIns < 20) {  
@@ -97,18 +97,18 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
         };
         switch(state) {
           default:
-          case DataLoadingEnum.SUCCESS:
+          case NtLoadingState.SUCCESS:
             this.loadingDomRef.instance.text = '加载更多';
             this.loadingDomRef.instance.clickType = 'more';
           break;
-          case DataLoadingEnum.END:
+          case NtLoadingState.END:
             this.loadingDomRef.instance.text = '- 已经到底啦 -';  
           break;          
-          case DataLoadingEnum.FAILED:
+          case NtLoadingState.FAILED:
             this.loadingDomRef.instance.text = '加载失败!';
             this.loadingDomRef.instance.clickType = 'retry';
           break;
-          case DataLoadingEnum.PENDING:
+          case NtLoadingState.PENDING:
             this.loadingDomRef.instance.text = '加载中...';
           break;
         }

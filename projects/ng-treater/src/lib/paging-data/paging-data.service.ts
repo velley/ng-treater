@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, Optional, Inject } from '@angular/core';
 import { switchMap, map, multicast, tap, filter, catchError, pluck, retry } from 'rxjs/operators';
 import { NG_TREATER_SETTINGS } from '../injection';
-import { DataLoadingEnum, NgTreaterSetting, PagingSetting } from '../interface';
+import { NtLoadingState, NgTreaterSetting, PagingSetting } from '../interface';
 
 interface Page{
   /** 当前所在页码 */
@@ -46,7 +46,7 @@ export class PagingDataService<D, F = Filter> {
   private requester$                   = new Subject<Filter> ();
   public  page: Page                   = {};
   public  total: number                = 0;
-  public  loadingState$                = new BehaviorSubject<DataLoadingEnum>(DataLoadingEnum.PENDING);
+  public  loadingState$                = new BehaviorSubject<NtLoadingState>(NtLoadingState.PENDING);
 
   get isFirstPage() {
     return this.page.targetNo === this.settings.paging.start;
@@ -77,7 +77,7 @@ export class PagingDataService<D, F = Filter> {
     const publisher$
       = this.requester$
           .pipe(                    
-            tap( _ =>  this.loadingState$.next(DataLoadingEnum.PENDING)),
+            tap( _ =>  this.loadingState$.next(NtLoadingState.PENDING)),
             switchMap( param => {
               let requestMap$: Observable<any>;
               switch(this.settings.method) {
@@ -96,7 +96,7 @@ export class PagingDataService<D, F = Filter> {
                     //注意：这里是在请求成功后才会更新当前页码值,所以不应在其他方法中更改pageNo
                     this.page.pageNo = param[this.settings.paging.indexKey]; 
                   }, _ => {
-                    this.loadingState$.next(DataLoadingEnum.FAILED)
+                    this.loadingState$.next(NtLoadingState.FAILED)
                   }),    
                   catchError(_ => new Subject<unknown>())
                 )
@@ -120,12 +120,12 @@ export class PagingDataService<D, F = Filter> {
   }
 
   /** 根据服务端返回的列表数据长度和分页信息来得到当前的请求状态 */
-  private getLoadingState(length: number): DataLoadingEnum {
-    if(length === 0 && this.isFirstPage) return DataLoadingEnum.EMPTY;
+  private getLoadingState(length: number): NtLoadingState {
+    if(length === 0 && this.isFirstPage) return NtLoadingState.EMPTY;
     if(length === this.settings.paging.size) {
-      return DataLoadingEnum.SUCCESS
+      return NtLoadingState.SUCCESS
     } else if(length < this.settings.paging.size) {
-      return DataLoadingEnum.END
+      return NtLoadingState.END
     }    
   }
 
@@ -182,7 +182,7 @@ export class PagingDataService<D, F = Filter> {
 
   /** 重试(在某次请求失败时，手动调用此方法重新发送请求) */
   retry() {
-    if(this.loadingState$.value === DataLoadingEnum.FAILED) {
+    if(this.loadingState$.value === NtLoadingState.FAILED) {
       this.requestTo();
     }else {
       console.warn('retry方法仅在请求失败后可用');
