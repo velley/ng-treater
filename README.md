@@ -137,4 +137,4 @@ class PlaceholderComponent implements DataLoadingStateTreater {
 ```
 
 ### ✍ 接口文档
-点击此处查看相关文档 [ng-treater接口文档](./projects/ng-treater/README.md).
+点击此处查看全部接口信息 [ng-treater接口文档](./projects/ng-treater/README.md).

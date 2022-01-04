@@ -1,7 +1,4 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { PagingDataService } from 'ng-treater';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-root',
