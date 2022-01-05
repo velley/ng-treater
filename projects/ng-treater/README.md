@@ -1,7 +1,7 @@
 
 ## Directive
 ### ntPagingContainer
-----
+
 - 参数
 
 |参数名|类型|默认值|备注|
@@ -20,10 +20,10 @@
 > 该指令暂不需要传入参数，只需与ntPagingContainer放置在同一宿主元素即可
 
 ### ntPlaceHolder
-> 该指令暂不需要传入参数，需要配合ng-container或元素html元素将数据渲染dom节点包裹。
+> 该指令暂不需要传入参数，需要配合ng-container或原生html将渲染数据的包裹。
 
-----
 
+------
 
 ## Service
 - PagingDataService
