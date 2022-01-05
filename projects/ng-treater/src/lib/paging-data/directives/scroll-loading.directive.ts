@@ -90,8 +90,8 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
         takeUntil(this.end$)
       )
       .subscribe(state => {
-        //若当前请求的分页为第一页，应暂时隐藏底部加载提示
-        if(this.pagingDataService.isFirstPage && state === NtLoadingState.PENDING) {
+        //若当前请求的分页为第一页,且状态为pending或failed，应暂时隐藏底部加载提示
+        if(this.pagingDataService.isFirstPage && [NtLoadingState.PENDING, NtLoadingState.FAILED].includes(state)) {
           this.loadingDom.style.display = 'none';
         } else {
           this.loadingDom.style.display = 'block';
