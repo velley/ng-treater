@@ -97,9 +97,9 @@ export class AppModule { }
 </div>
 ```
 
-> 你可以为占位提示编写一个自定义组件并传入全局配置中(因为本插件的默认占位提示仅仅是一段文字，你可能更希望占位提示是一个图标或者其他效果)。编写占位提示组件的示例如下
+> 你可以为占位提示编写一个自定义组件并传入全局配置中(因为本插件的默认占位提示仅仅是一段文字，你可能更希望占位提示是一个图标或者其他效果)。编写占位提示组件的示例如下：
 ```ts
-// my-dataPlaceholder.component.ts
+// my-Placeholder.component.ts
 import { NtLoadingState, DataLoadingStateTreater } from 'ng-treaterr';
 
 const LOADING_STATE_MAP = {
@@ -120,20 +120,32 @@ const LOADING_STATE_MAP = {
     }
   `]
 })
-class PlaceholderComponent implements DataLoadingStateTreater {
+class MyPlaceholderComponent implements DataLoadingStateTreater {
   
   state: NtLoadingState;
   loadingStateMap = LOADING_STATE_MAP;
   retry: () => void;
 
-  registerLoadingState(state: BehaviorSubject<NtLoadingState>){
-    state.subscribe(val => this.state = val)
+  writeState(state: NtLoadingState) {
+    this.state = state;
   };
 
   registerRetryFunc(fn: any) {
     this.retry = fn;
   };
 }
+/** 
+ * 在全局配置中传入placeholder参数
+ * providers: [
+    {
+      provide: NG_TREATER_SETTINGS, useValue: <NgTreaterSetting> {
+        placeholder: MyPlaceholderComponent,
+        ...
+      }
+    }
+  ],
+ * 
+*/
 ```
 
 ### ✍ 接口文档
