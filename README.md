@@ -109,7 +109,7 @@ const LOADING_STATE_MAP = {
 }
 @Component({
   template: `    
-    <div class="nt-placeholder">{{ loadingTextObj[state] }}</div>   
+    <div class="nt-placeholder">{{ loadingStateMap[state] }}</div>   
     <div class="retry" *ngIf="state==='failed'" (click)="retry()">点击重试</div> 
   `,
   styles:[`

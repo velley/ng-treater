@@ -8,7 +8,9 @@ import {
   Component,
   ViewChild,
   Injector,
-  Directive
+  Directive,
+  Type,
+  ComponentRef
 } from '@angular/core';
 import { PagingDataService } from '../../paging-data/paging-data.service';
 import { NG_TREATER_SETTINGS } from '../../injection';
@@ -23,6 +25,7 @@ import { BehaviorSubject } from 'rxjs';
 export class DataPlaceHolderDirective implements OnInit  {
 
   loadingState: NtLoadingState;
+  placeholder: ComponentRef<DataLoadingStateTreater>;
   @ViewChild('placeholder', {read: TemplateRef}) placeholderTpl: TemplateRef<any>;
   
   constructor(
@@ -58,12 +61,13 @@ export class DataPlaceHolderDirective implements OnInit  {
   }  
 
   private addPlaceholder() {
-    const globalTpl = this.setting.placeholder || PlaceholderComponent;
-    const factory = this.cfr.resolveComponentFactory(globalTpl);
-      const component = factory.create(this.injector);
-      component.instance.registerLoadingState(this.paging.loadingState$);
-      component.instance.registerRetryFunc(() => this.paging.retry());
-      this.viewContainer.insert(component.hostView);
+    const state = this.paging.loadingState$.value;    
+    const globalTpl  = this.setting.placeholder || PlaceholderComponent;
+    const factory    = this.cfr.resolveComponentFactory(globalTpl);
+    this.placeholder = factory.create(this.injector);
+    this.placeholder.instance.writeState(this.paging.loadingState$.value);
+    this.placeholder.instance.registerRetryFunc(() => this.paging.retry());
+    this.viewContainer.insert(this.placeholder.hostView);
   }
 }
 
@@ -84,18 +88,18 @@ const LOADING_STATE_MAP = {
     }
   `]
 })
-class PlaceholderComponent implements DataLoadingStateTreater {
+export class PlaceholderComponent implements DataLoadingStateTreater {
   
   state: NtLoadingState;
   loadingTextObj = LOADING_STATE_MAP;
 
-  registerLoadingState(state: BehaviorSubject<NtLoadingState>){
-    state.subscribe(val => {
-      this.state = val
-    })
+  retry: () => void;
+
+  writeState(state: NtLoadingState) {
+    this.state = state;
   };
 
   registerRetryFunc(fn: any) {
-
+    this.retry = fn;
   };
 }

@@ -1,12 +1,13 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DataPlaceHolderDirective } from './directives/data-placeholder.directive';
+import { DataPlaceHolderDirective, PlaceholderComponent } from './directives/data-placeholder.directive';
 
 
 
 @NgModule({
   declarations: [
-    DataPlaceHolderDirective
+    DataPlaceHolderDirective,
+    PlaceholderComponent
   ],
   imports: [
     CommonModule

@@ -29,10 +29,10 @@ export interface NgTreaterSetting {
 
 /** 自定义Placeholder组件需要继承的接口 */
 export interface DataLoadingStateTreater {
-  /** 注册加载状态数据 */
-  registerLoadingState: (state: BehaviorSubject<NtLoadingState>) => void;
+  /** 写入当前加载状态 */
+  writeState(state: NtLoadingState): void;
   /** 注册错误重试方法 */
-  registerRetryFunc: (fn: any) => void;
+  registerRetryFunc(fn: any): void;
 }
 
 /** 数据请求状态枚举 */
