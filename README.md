@@ -6,7 +6,7 @@
 <div align="center">
 
 ![GitHub package.json version (subfolder of monorepo)](https://img.shields.io/github/package-json/v/velley/ng-treater?filename=projects%2Fng-treater%2Fpackage.json)
-![](https://img.shields.io/badge/angular-v12.x-green.svg)
+![](https://img.shields.io/badge/angular-v13.x-green.svg)
 ![GitHub](https://img.shields.io/github/license/velley/ng-treater)
 
 
