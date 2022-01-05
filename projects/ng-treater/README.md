@@ -1,37 +1,143 @@
-# NgTreater
 
-This library was generated with [Angular CLI](https://github.com/angular/angular-cli) version 10.0.9.
+## Directive
+### ntPagingContainer
+----
+- 参数
+
+|参数名|类型|默认值|备注|
+|------|----|-----|----|
+|url  |string|undefind|分页请求的url地址|
+|querys|json|{  }|分页请求的默认参数|
+|options|PagingSetting|undefind|分页请求配置项，可以覆盖全局配置
+
+- 事件
+
+|事件名|输出类型|备注|
+|---------|----|-----|
+|created  |Observable<any>|数据源创建成功，并输出observable供外部订阅|
+
+### ntScrollLoading
+> 该指令暂不需要传入参数，只需与ntPagingContainer放置在同一宿主元素即可
+
+### ntPlaceHolder
+> 该指令暂不需要传入参数，需要配合ng-container或元素html元素将数据渲染dom节点包裹。
+
+----
+
+
+## Service
+- PagingDataService
+> 该服务为内部指令使用的通用服务,用于定义分页请求的逻辑集合。若需要对分页请求逻辑进行更精确的控制，可以手动注入该服务以替代指令ntPagingContainer(可以理解为ntPgingContainer内部接管了对PagingDataService的调用);示例如下：
+```ts
+// demo.component.ts
+import { PagingDataService } from 'ng-treater';
+
+@Component({
+  selector: 'app-demo',
+  templateUrl: './demo.component.html',
+  providers: [PagingDataService] //必须在组件内部提供该服务
+})
+export class BanksComponent implements OnInit {
+
+  data$: Observable<any[]>;
   
-# 主要特性：
+  constructor(
+    private paging: PagingDataService<any>,
+  ) { }
+
+  ngOnInit(): void {
+    this.data$ = this.paging.create('/api/getData');
+  }
+
+  get State() {
+    return this.paging.loadingState$;
+  }
   
-## 一、对分页数据处理逻辑的抽象
-### 1.功能
-+ 通过pagingDataSevice服务快速请求并处理服务端返回的分页数据；
-+ 通过ScrollLoading指令来实现滚动底部时自动加载分页数据；
-+ 通过DataPlaceholder指令来实现请求数据时渲染不同的占位提示(可为请求中/空数据/请求失败3中状态配置不同的占位图)。
-+ 通过PullFresh指令实现下拉刷新。（代码待实现）
-### 2.使用方法
-+ 在需要分页数据的组件中import导入pagiService, 并在provides数据中添加该Service
-+ 在组件的constructor构造器中注入服务，然后根据实际需要调用服务的create方法，传入请求地址和初始参数，并订阅返回的Observable对象(一个组件中只能调用一次create方法)
-+ 可以在组件模板中使用ntScrollLoading/ntDataPlaceHolder指令分别实现滚动加载和占位图提示的功能
-+ 可以在该组件所属的特性模块或者根模块提供一个分页配置服务，该服务令牌为 PAGING_DATA_SETTING,下面为使用示例：  
+  nexPage() {
+    this.paging.nextPage()
+  }
+
+  prePage() {
+    this.paging.previousPage()
+  }
+}
+```
+> 手动引入PagingService后，不能再使用ntPagingContainer；但ntScrollLoading与ntPlaceHolder仍可使用
+```html
+<!-- demo.component.html -->
+<div class="container" >
+  <ng-container *ngPlaceHolder>
+    <div class="item" *ngFor="let item of data$ |async">
+      {{item}}
+    </div>
+  </ng-container>  
+</div>
+```
+----
+
+## Interface
+
+- PagingSetting
+> 分页请求配置项
 ``` ts
-  // import { PAGING_DATA_SETTING } from 'ng-treater';  
-  { provide: PAGING_DATA_SETTING,  
-    useValue:{  
-      isWaterFall: true, //是否已瀑布流的特性发布数据(默认为true)  
-      pageSize: 16, //每一页的数据条数  
-      plucker:['data','result'], //存放分页数据的响应体键名，不传默认为res.data(此处传值后则为res.data.result)  
-      retry: true, //请求失败时是否允许显示重试按钮  
-      pendingImgPath: 'assets/data_loading.png', //请求中的占位图路径  
-      pendingText: 'assets/data_loading.png', //请求中的文字提示  
-      emptyImgPath: 'assets/no_data.png', //空数据时的占位图路径  
-      emptyText: 'assets/no_data.png', //空数据时的文字提示  
-      failedImgPath: 'assets/data_loading_error.png' //请求失败的占位图路径  
-      failedText: 'assets/data_loading_error.png' //请求失败的文字提示  
-    }  
-  },  
-```  
-# 资料参考
-[点击此处查看pagingDataService及相关指令的实现思路](https://zhuanlan.zhihu.com/p/165118088)
+{  
+  /** 每页条数 */
+  size: number;
+  /** 起始页索引 */
+  start: 0 | 1;
+  /** 每页条数的键名 */
+  sizeKey: string;
+  /** 当前页索引的键名 */
+  indexKey: string;  
+  /** 访问列表数据的属性路径 */
+  dataPlucker: string[];
+  /** 访问总条数的属性路径 */
+  totalPlucker: string[];
+  /** 是否为滚动加载 */
+  scrollLoading: boolean;
+}
 
+```
+
+- NgTreaterSetting 
+> ng-treater插件的全局配置项，配合令牌NG_TREATER_SETTINGS一起使用
+```ts
+{  
+  /** 自定义占位提示组件 */
+  placeholder?: Type<DataLoadingStateTreater>;
+  /** 请求重试次数 */
+  retryCounter?: number;
+  /** 默认请求方法 */
+  method?: 'post' | 'get';
+  /** 分页请求配置项 */
+  paging?: PagingSetting;
+}
+```
+
+- DataLoadingStateTreater 
+> 自定义Placeholder组件需要继承的接口
+```ts
+{
+  /** 注册加载状态数据 */
+  registerLoadingState: (state: BehaviorSubject<NtLoadingState>) => void;
+  /** 注册错误重试方法 */
+  registerRetryFunc: (fn: any) => void;
+}
+```
+
+- enum NtLoadingState 
+> 数据请求状态枚举
+```ts
+{
+  /** 数据请求中*/
+  PENDING = 'pending',
+  /** 数据请求成功 */
+  SUCCESS = 'success',
+  /** 空数据 */
+  EMPTY = 'empty',
+  /** 请求失败 */
+  FAILED  = 'failed',
+  /** 请求结束(仅在分页请求场景下有效，表示当前已为最后一页，无法再请求下一页数据) */
+  END = 'end'
+}
+```

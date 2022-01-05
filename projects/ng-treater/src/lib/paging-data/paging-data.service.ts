@@ -64,7 +64,7 @@ export class PagingDataService<D, F = Filter> {
    * @param defaultQuerys 默认请求参数(每次请求都会带上该参数，不会被reset方法清空)
    * @param localPagingSetting 本地分页设置，可覆盖全局设置
   */
-  create(url: string, defaultQuerys: Filter = {}, localPagingSetting?: Partial<PagingSetting>) {    
+  create(url: string, defaultQuerys: Filter = {}, localPagingSetting?: Partial<PagingSetting & {method: 'post' | 'get'}>) {    
     // 合并配置
     this.globalSetting && Object.assign(this.settings, this.globalSetting);
     localPagingSetting && Object.assign(this.settings.paging, localPagingSetting);
@@ -80,7 +80,8 @@ export class PagingDataService<D, F = Filter> {
             tap( _ =>  this.loadingState$.next(NtLoadingState.PENDING)),
             switchMap( param => {
               let requestMap$: Observable<any>;
-              switch(this.settings.method) {
+              const method = localPagingSetting.method || this.settings.method;
+              switch(method) {
                 default:
                 case 'post':
                   requestMap$ = this.http.post<any>(url, {...defaultQuerys, ...param});
