@@ -17,8 +17,13 @@ export class PagingContainerDirective  implements OnInit{
   @Output() created = new EventEmitter<Observable<any[]>>();
 
   data$: ConnectableObservable<any[]>;
+
   get total() {
     return this.paging.total;
+  }
+
+  get state() {
+    return this.paging.loadingState$.value
   }
   
   constructor(
@@ -31,7 +36,7 @@ export class PagingContainerDirective  implements OnInit{
       console.warn('未传入url地址,PagingContainerDirective内部无法发送分页请求');
       return;
     }
-    this.data$ = this.paging.create(this.url, this.querys, {...this.options, scrollLoading: !!this.scroller});
+    this.data$ = this.paging.create(this.url, this.querys, {scrollLoading: !!this.scroller, ...this.options });
     this.created.emit(this.data$);
   } 
 

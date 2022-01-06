@@ -20,20 +20,6 @@ interface Filter {
   [prop: string]: any;
 }
 
-const DEFAULT_SETTING: NgTreaterSetting = {
-  retryCounter: 1,
-  method: 'post',
-  paging: {
-    dataPlucker: ['data'],
-    totalPlucker: ['total'],
-    size: 10,
-    start: 1,
-    indexKey: 'pageNo',
-    sizeKey: 'pageSize',
-    scrollLoading: false
-  }
-}
-
 /*
   对分页数据查询的http请求与处理逻辑可托管给此服务
 */
@@ -56,7 +42,20 @@ export class PagingDataService<D = any, F = Filter> {
     private http: HttpClient,
     @Optional() @Inject(NG_TREATER_SETTINGS) private globalSetting: NgTreaterSetting
   ) {
-    this.settings = Object.create(DEFAULT_SETTING);
+    console.log(this)
+    this.settings = {
+      retryCounter: 1,
+      method: 'post',
+      paging: {
+        dataPlucker: ['data'],
+        totalPlucker: ['total'],
+        size: 10,
+        start: 1,
+        indexKey: 'pageNo',
+        sizeKey: 'pageSize',
+        scrollLoading: false
+      }
+    };
   }  
 
   /** 根据传入的url请求地址，向服务端发送请求，并返回可观察对象publisher$
@@ -66,8 +65,9 @@ export class PagingDataService<D = any, F = Filter> {
   */
   create(url: string, defaultQuerys: Filter = {}, localPagingSetting?: Partial<PagingSetting & {method: 'post' | 'get'}>) {    
     // 合并配置
-    this.globalSetting && Object.assign(this.settings, this.globalSetting);
-    localPagingSetting && Object.assign(this.settings.paging, localPagingSetting);
+    this.globalSetting && (this.settings = {...this.settings, ...this.globalSetting});
+    localPagingSetting && (this.settings.paging = {...this.settings.paging, ...localPagingSetting});
+    console.log(this.settings, localPagingSetting, url)
 
     // 初始化分页信息
     this.page.pageNo    = this.page.targetNo = this.settings.paging.start;
@@ -144,7 +144,7 @@ export class PagingDataService<D = any, F = Filter> {
    * @param querys 需要传入的json查询对象，传入后会被一直保存(可调用reset方法清空)
    */
   addFilter(querys: F) {
-    this.page.pageNo  = this.settings.paging.start; //筛选条件改变时，页码重置为初始值
+    this.page.targetNo  = this.settings.paging.start; //筛选条件改变时，页码重置为初始值
     this.filters = Object.assign(this.filters, querys);
     this.listCache    = [];
     if( querys === null ) this.filters = {};
