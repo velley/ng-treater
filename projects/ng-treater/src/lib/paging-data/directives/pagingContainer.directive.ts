@@ -13,16 +13,16 @@ export class PagingContainerDirective  implements OnInit{
 
   @Input() url: string;
   @Input() querys: any = {};
-  @Input() options: PagingSetting;
+  @Input() options: Partial<PagingSetting> = {};
   @Output() created = new EventEmitter<Observable<any[]>>();
 
-  data$: ConnectableObservable<unknown[]>;
+  data$: ConnectableObservable<any[]>;
   get total() {
     return this.paging.total;
   }
   
   constructor(
-    private paging: PagingDataService<unknown>,
+    private paging: PagingDataService,
     @Optional() @Self() private scroller: ScrollLoadingDirective //注入该指令仅用来判断宿主视图是否可滚动加载
   ) {}
 
@@ -31,7 +31,7 @@ export class PagingContainerDirective  implements OnInit{
       console.warn('未传入url地址,PagingContainerDirective内部无法发送分页请求');
       return;
     }
-    this.data$ = this.paging.create(this.url, this.querys, {scrollLoading: !!this.scroller});
+    this.data$ = this.paging.create(this.url, this.querys, {...this.options, scrollLoading: !!this.scroller});
     this.created.emit(this.data$);
   } 
 

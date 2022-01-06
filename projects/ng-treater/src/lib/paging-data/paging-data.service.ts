@@ -38,7 +38,7 @@ const DEFAULT_SETTING: NgTreaterSetting = {
   对分页数据查询的http请求与处理逻辑可托管给此服务
 */
 @Injectable()
-export class PagingDataService<D, F = Filter> {  
+export class PagingDataService<D = any, F = Filter> {  
  
   private filters: Filter              = {};
   private settings: NgTreaterSetting   = {};
