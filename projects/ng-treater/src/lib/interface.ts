@@ -24,7 +24,7 @@ export interface NgTreaterSetting {
   placeholder?: Type<DataLoadingStateTreater>;
   retryCounter?: number;
   method?: 'post' | 'get';
-  paging?: PagingSetting;
+  paging: PagingSetting;
 }
 
 /** 自定义Placeholder组件需要继承的接口 */

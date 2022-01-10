@@ -7,13 +7,13 @@ import { NtLoadingState, NgTreaterSetting, PagingSetting } from '../interface';
 
 interface Page{
   /** 当前所在页码 */
-  pageNo?:number,
+  pageNo:number,
   /** 当前页数量 */
-  pageSize?: number,  
+  pageSize: number,  
   /** 数据总量 */
-  total?: number,
+  total: number,
   /** 目标页码(指即将发送请求的页码) */
-  targetNo?: number
+  targetNo: number
 }
 
 interface Filter {  
@@ -27,15 +27,15 @@ interface Filter {
 export class PagingDataService<D = any, F = Filter> {  
  
   private filters: Filter              = {};
-  private settings: NgTreaterSetting   = {};
+  private settings!: NgTreaterSetting;
   private listCache: D[]               = [];  
   private requester$                   = new Subject<Filter> ();
-  public  page: Page                   = {};
+  public  page!: Page;
   public  total: number                = 0;
   public  loadingState$                = new BehaviorSubject<NtLoadingState>(NtLoadingState.PENDING);
 
   get isFirstPage() {
-    return this.page.targetNo === this.settings.paging.start;
+    return this.page.targetNo === this.settings.paging?.start;
   }
 
   constructor(     
@@ -67,11 +67,10 @@ export class PagingDataService<D = any, F = Filter> {
     // 合并配置
     this.globalSetting && (this.settings = {...this.settings, ...this.globalSetting});
     localPagingSetting && (this.settings.paging = {...this.settings.paging, ...localPagingSetting});
-    console.log(this.settings, localPagingSetting, url)
 
     // 初始化分页信息
-    this.page.pageNo    = this.page.targetNo = this.settings.paging.start;
-    this.page.pageSize  = this.settings.paging.size;
+    this.page.pageNo    = this.page.targetNo = this.settings.paging?.start;
+    this.page.pageSize  = this.settings.paging?.size;
 
     // 创建requeter$与publisher$
     const publisher$
@@ -80,7 +79,7 @@ export class PagingDataService<D = any, F = Filter> {
             tap( _ =>  this.loadingState$.next(NtLoadingState.PENDING)),
             switchMap( param => {
               let requestMap$: Observable<any>;
-              const method = localPagingSetting.method || this.settings.method;
+              const method = localPagingSetting?.method || this.settings.method;
               switch(method) {
                 default:
                 case 'post':
@@ -113,7 +112,7 @@ export class PagingDataService<D = any, F = Filter> {
             map( data => this.settings.paging.scrollLoading ? this.listCache.concat(data) : data ),            
             tap( data => this.listCache = data),
             multicast(new BehaviorSubject([]))                   
-          ) as ConnectableObservable< D[] >
+          ) as Observable<unknown> as ConnectableObservable<D[]>
 
     publisher$.connect();
     this.requestTo();
@@ -127,7 +126,9 @@ export class PagingDataService<D = any, F = Filter> {
       return NtLoadingState.SUCCESS
     } else if(length < this.settings.paging.size) {
       return NtLoadingState.END
-    }    
+    } else {
+      return NtLoadingState.SUCCESS
+    }
   }
 
   private requestTo() {
@@ -190,7 +191,7 @@ export class PagingDataService<D = any, F = Filter> {
     }
   }
 
-  /** 根据已有查询条件重新请求 */
+  /** 根据已有查询条件重新请求(页码不变) */
   fresh() {
     //滚动加载模式下页码与列表数据需要重置
     if(this.settings.paging.scrollLoading) {

@@ -11,19 +11,19 @@ import { ScrollLoadingDirective } from "./scroll-loading.directive";
 })
 export class PagingContainerDirective  implements OnInit{
 
-  @Input() url: string;
+  @Input() url!: string;
   @Input() querys: any = {};
   @Input() options: Partial<PagingSetting> = {};
   @Output() created = new EventEmitter<Observable<any[]>>();
 
-  data$: ConnectableObservable<any[]>;
+  data$!: ConnectableObservable<any[]>;  
+
+  get state$() {
+    return this.paging.loadingState$
+  }
 
   get total() {
     return this.paging.total;
-  }
-
-  get state() {
-    return this.paging.loadingState$.value
   }
   
   constructor(
