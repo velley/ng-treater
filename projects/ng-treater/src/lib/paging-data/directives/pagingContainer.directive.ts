@@ -25,6 +25,10 @@ export class PagingContainerDirective  implements OnInit{
   get total() {
     return this.paging.total;
   }
+
+  get page() {
+    return this.paging.page
+  }
   
   constructor(
     private paging: PagingDataService,
