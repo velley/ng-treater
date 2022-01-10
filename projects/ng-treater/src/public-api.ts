@@ -16,4 +16,4 @@ export * from './lib/interface';
 // 导出指令
 export * from './lib/share/directives/data-placeholder.directive';
 export * from './lib/paging-data/directives/scroll-loading.directive';
-export * from './lib/paging-data/directives/pagingContainer.directive';
+export { PagingContainerDirective } from './lib/paging-data/directives/pagingContainer.directive';

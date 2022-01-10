@@ -19,7 +19,7 @@ export class PagingContainerDirective  implements OnInit{
   data$!: ConnectableObservable<any[]>;  
 
   get state$() {
-    return this.paging.loadingState$
+    return this.paging.loadingState$;
   }
 
   get total() {

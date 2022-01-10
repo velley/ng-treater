@@ -5,7 +5,7 @@ import { switchMap, map, multicast, tap, filter, catchError, pluck, retry } from
 import { NG_TREATER_SETTINGS } from '../injection';
 import { NtLoadingState, NgTreaterSetting, PagingSetting } from '../interface';
 
-interface Page{
+export interface Page{
   /** 当前所在页码 */
   pageNo:number,
   /** 当前页数量 */
@@ -42,7 +42,6 @@ export class PagingDataService<D = any, F = Filter> {
     private http: HttpClient,
     @Optional() @Inject(NG_TREATER_SETTINGS) private globalSetting: NgTreaterSetting
   ) {
-    console.log(this)
     this.settings = {
       retryCounter: 1,
       method: 'post',
@@ -69,6 +68,7 @@ export class PagingDataService<D = any, F = Filter> {
     localPagingSetting && (this.settings.paging = {...this.settings.paging, ...localPagingSetting});
 
     // 初始化分页信息
+    this.page = {} as any;
     this.page.pageNo    = this.page.targetNo = this.settings.paging?.start;
     this.page.pageSize  = this.settings.paging?.size;
 
@@ -110,7 +110,7 @@ export class PagingDataService<D = any, F = Filter> {
             tap( data => this.loadingState$.next(this.getLoadingState(data.length)) ),             
             filter( data => Boolean(data.length) || (!data.length && this.isFirstPage) ),
             map( data => this.settings.paging.scrollLoading ? this.listCache.concat(data) : data ),            
-            tap( data => this.listCache = data),
+            tap( (data: any) => this.listCache = data,),
             multicast(new BehaviorSubject([]))                   
           ) as Observable<unknown> as ConnectableObservable<D[]>
 

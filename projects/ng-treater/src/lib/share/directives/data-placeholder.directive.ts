@@ -24,9 +24,9 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class DataPlaceHolderDirective implements OnInit  {
 
-  loadingState: NtLoadingState;
-  placeholder: ComponentRef<DataLoadingStateTreater>;
-  @ViewChild('placeholder', {read: TemplateRef}) placeholderTpl: TemplateRef<any>;
+  loadingState!: NtLoadingState;
+  placeholder!: ComponentRef<DataLoadingStateTreater>;
+  @ViewChild('placeholder', {read: TemplateRef}) placeholderTpl!: TemplateRef<any>;
   
   constructor(
     private injector: Injector,
@@ -90,10 +90,10 @@ const LOADING_STATE_MAP = {
 })
 export class PlaceholderComponent implements DataLoadingStateTreater {
   
-  state: NtLoadingState;
-  loadingTextObj = LOADING_STATE_MAP;
+  state!: string;
+  loadingTextObj = LOADING_STATE_MAP as any;
 
-  retry: () => void;
+  retry!: () => void;
 
   writeState(state: NtLoadingState) {
     this.state = state;

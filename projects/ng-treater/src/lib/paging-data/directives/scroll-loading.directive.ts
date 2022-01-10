@@ -22,9 +22,9 @@ import { PagingDataService } from '../paging-data.service';
 })
 export class ScrollLoadingDirective implements OnInit, OnDestroy {
   
-  loadingDom: HTMLElement;
-  loadingDomRef: ComponentRef<ScrollLoadingBox>;
-  loadingState$: BehaviorSubject<NtLoadingState>; 
+  loadingDom!: HTMLElement;
+  loadingDomRef!: ComponentRef<ScrollLoadingBox>;
+  loadingState$!: BehaviorSubject<NtLoadingState>; 
   end$ = new Subject()
 
   constructor(
@@ -144,8 +144,8 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
 })
 export class ScrollLoadingBox {
 
-  text: string ;
-  clickType: 'more' | 'retry';
+  text!: string ;
+  clickType!: 'more' | 'retry';
 
   constructor(
     @Optional() @SkipSelf() private pagingDataService: PagingDataService<unknown>
