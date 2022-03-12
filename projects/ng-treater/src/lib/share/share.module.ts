@@ -17,4 +17,4 @@ import { DataPlaceHolderDirective, PlaceholderComponent } from './directives/dat
     DataPlaceHolderDirective
   ]
 })
-export class ShareModule { }
+export class NtShareModule { }

@@ -1,13 +1,16 @@
 import { NgModule } from '@angular/core';
-import { ShareModule } from '../share/share.module';
-import { simpleContainerDirective } from './simpleContainer.directive';
+import { NtShareModule } from '../share/share.module';
+import { SimpleContainerDirective } from './simpleContainer.directive';
 
 
 
 @NgModule({
-  declarations: [simpleContainerDirective],
+  declarations: [SimpleContainerDirective],
   imports: [
-    ShareModule
+    NtShareModule
+  ],
+  exports: [
+    SimpleContainerDirective
   ]
 })
 export class SimpleDataModule { }

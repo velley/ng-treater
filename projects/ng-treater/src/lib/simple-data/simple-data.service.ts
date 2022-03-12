@@ -5,6 +5,10 @@ import { switchMap, multicast, tap, catchError, pluck, retry } from 'rxjs/operat
 import { NG_TREATER_SETTINGS } from '../injection';
 import { NtLoadingState, NgTreaterSetting } from '../interface';
 
+interface SimpleQuerys {
+  [prop: string]: number | string
+}
+
 /*
   对非分页数据查询的http请求与处理逻辑可托管给此服务
 */
@@ -12,8 +16,9 @@ import { NtLoadingState, NgTreaterSetting } from '../interface';
 export class SimpleDataService<D = any> {  
  
   private settings!: Partial<NgTreaterSetting>;
-  private requester$                   = new Subject();
-  public  loadingState$                = new BehaviorSubject<NtLoadingState>(NtLoadingState.PENDING);
+  private requester$    = new Subject<SimpleQuerys>();
+  private querys        = {} as SimpleQuerys;
+  public  loadingState$ = new BehaviorSubject<NtLoadingState>(NtLoadingState.PENDING);
 
   constructor(     
     private http: HttpClient,
@@ -42,16 +47,16 @@ export class SimpleDataService<D = any> {
       = this.requester$
           .pipe(                    
             tap( _ =>  this.loadingState$.next(NtLoadingState.PENDING)),
-            switchMap( param => {
+            switchMap( querys => {
               let requestMap$: Observable<any>;
               const method = localSetting?.method || this.settings.method;
               switch(method) {
                 default:
                 case 'post':
-                  requestMap$ = this.http.post<any>(url, {...defaultQuerys});
+                  requestMap$ = this.http.post<any>(url, {...defaultQuerys, ...querys});
                 break;
                 case 'get':
-                  requestMap$ = this.http.get<any>(url, {params:{...defaultQuerys}});
+                  requestMap$ = this.http.get<any>(url, {params:{...defaultQuerys, ...querys}});
                 break;
               }        
               return requestMap$
@@ -67,20 +72,29 @@ export class SimpleDataService<D = any> {
             }),  
             pluck<unknown, never[]>( ...this.settings.simple?.plucker || []),    
             multicast(new BehaviorSubject([]))                   
-          ) as Observable<unknown> as ConnectableObservable<D[]>
+          ) as Observable<unknown> as ConnectableObservable<D>
 
     publisher$.connect();
     this.requestTo();
     return publisher$;
   }
 
-
   private requestTo() {
-    this.requester$.next()
+    this.requester$.next(this.querys)
   }
 
-  /** 重新请求 */
-  fresh() { 
+  /** 重试 */
+  retry() {
+    if(this.loadingState$.value === NtLoadingState.FAILED) {
+      this.requestTo();
+    }else {
+      console.warn('retry方法仅在请求失败后可用');
+    }
+  }
+
+  /** 刷新请求 */
+  fresh(querys?: SimpleQuerys) { 
+    if(querys) this.querys = Object.assign(this.querys, querys)
     this.requestTo();
   }
 }

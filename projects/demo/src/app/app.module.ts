@@ -1,8 +1,7 @@
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { NG_TREATER_SETTINGS, PagingDataModule, NgTreaterSetting } from 'ng-treater';
-import { pluck } from 'rxjs/operators';
+import { NG_TREATER_SETTINGS, PagingDataModule, SimpleDataModule, NgTreaterSetting } from 'ng-treater';
 
 import { AppComponent } from './app.component';
 
@@ -13,6 +12,7 @@ import { AppComponent } from './app.component';
   imports: [
     BrowserModule,
     PagingDataModule,
+    SimpleDataModule,
     HttpClientModule
   ],
   providers: [

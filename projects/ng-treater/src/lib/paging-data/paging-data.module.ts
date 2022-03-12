@@ -1,6 +1,6 @@
 import { NgModule } from "@angular/core";
 import { ScrollLoadingDirective } from './directives/scroll-loading.directive';
-import { ShareModule } from "../share/share.module";
+import { NtShareModule } from "../share/share.module";
 import { PagingContainerDirective } from "./directives/pagingContainer.directive";
 
 @NgModule({
@@ -9,12 +9,12 @@ import { PagingContainerDirective } from "./directives/pagingContainer.directive
     ScrollLoadingDirective,
   ],  
   imports:[
-    ShareModule
+    NtShareModule
   ],
   exports:[
     PagingContainerDirective,
     ScrollLoadingDirective,
-    ShareModule  
+    NtShareModule  
   ]
 }) 
 export class PagingDataModule {

@@ -57,7 +57,9 @@ export class PagingDataService<D = any, F = Filter> {
     };
   }  
 
-  /** 根据传入的url请求地址，向服务端发送请求，并返回可观察对象publisher$
+  /** 
+   * @description 1.根据传入的url请求地址，向服务端发送请求，并返回可观察对象publisher$，该对象为订阅者提供请求返回的数据(数据结果取决于NgTreaterSetting.paging.dataPlucker的配置)
+   * @description 2.该请求基于angular httpClient,所以应用中通过HTTP_INCERPT提供的请求拦截器依然对该请求生效
    * @param url 服务端请求地址
    * @param defaultQuerys 默认请求参数(每次请求都会带上该参数，不会被reset方法清空)
    * @param localPagingSetting 本地分页设置，可覆盖全局设置
@@ -201,7 +203,7 @@ export class PagingDataService<D = any, F = Filter> {
     this.requestTo();
   }
 
-  /** 重置(清除查询条件与重置页码后重新发送数据请求) */
+  /** 重置(清除查询条件并重置页码，重新发送数据请求) */
   reset() {
     this.filters      = {}; 
     this.listCache    = [];

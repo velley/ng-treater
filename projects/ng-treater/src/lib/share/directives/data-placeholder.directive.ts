@@ -15,7 +15,7 @@ import {
 import { PagingDataService } from '../../paging-data/paging-data.service';
 import { NG_TREATER_SETTINGS } from '../../injection';
 import { NtLoadingState, DataLoadingStateTreater, NgTreaterSetting } from '../../interface';
-import { BehaviorSubject } from 'rxjs';
+import { SimpleDataService } from '../../simple-data/simple-data.service';
 
 
 
@@ -26,6 +26,7 @@ export class DataPlaceHolderDirective implements OnInit  {
 
   loadingState!: NtLoadingState;
   placeholder!: ComponentRef<DataLoadingStateTreater>;
+  dataTreater!: PagingDataService | SimpleDataService;
   @ViewChild('placeholder', {read: TemplateRef}) placeholderTpl!: TemplateRef<any>;
   
   constructor(
@@ -34,22 +35,24 @@ export class DataPlaceHolderDirective implements OnInit  {
     private viewContainer: ViewContainerRef,
     private cfr: ComponentFactoryResolver,
     @Optional() private paging: PagingDataService<unknown>,
+    @Optional() private simple: SimpleDataService,
     @Optional() @Inject(NG_TREATER_SETTINGS) private setting: NgTreaterSetting
   ) {
        
   }
 
   ngOnInit() {    
-    if(!this.paging) console.error('未找到PagingDatService服务, DataPlaceHolder指令无法生效');
+    this.dataTreater = this.paging || this.simple;
+    if(!this.dataTreater) console.error('未找到PagingDatService或SimpleDataService服务, DataPlaceHolder指令无法生效');
     this.watchLoadingState();
   }
 
   private watchLoadingState() {    
-    this.paging?.loadingState$
+    this.dataTreater?.loadingState$
       .subscribe( state => {
         this.loadingState = state;
-        /** 只需要在第一页请求时插入Placeholder占位视图 */
-        if(!this.paging.isFirstPage) return;
+        /** 若当前请求为分页请求，只需要在第一页请求时插入Placeholder占位视图 */
+        if(this.paging && !this.paging.isFirstPage) return;
         if([NtLoadingState.PENDING, NtLoadingState.EMPTY, NtLoadingState.FAILED].includes(state)){
           this.viewContainer.clear();
           this.addPlaceholder();
@@ -61,12 +64,12 @@ export class DataPlaceHolderDirective implements OnInit  {
   }  
 
   private addPlaceholder() {
-    const state = this.paging.loadingState$.value;    
+    const state = this.dataTreater.loadingState$.value;    
     const globalTpl  = this.setting.placeholder || PlaceholderComponent;
     const factory    = this.cfr.resolveComponentFactory(globalTpl);
     this.placeholder = factory.create(this.injector);
-    this.placeholder.instance.writeState(this.paging.loadingState$.value);
-    this.placeholder.instance.registerRetryFunc(() => this.paging.retry());
+    this.placeholder.instance.writeState(this.dataTreater.loadingState$.value);
+    this.placeholder.instance.registerRetryFunc(() => this.dataTreater.retry());
     this.viewContainer.insert(this.placeholder.hostView);
   }
 }

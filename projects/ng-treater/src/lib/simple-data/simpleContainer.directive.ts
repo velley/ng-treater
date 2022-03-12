@@ -3,11 +3,11 @@ import { ConnectableObservable, Observable } from "rxjs";
 import { SimpleDataService } from "./simple-data.service";
 
 @Directive({
-  selector: '[ntsimpleContainer]',
-  exportAs: 'ntsimple',
+  selector: '[ntSimpleContainer]',
+  exportAs: 'ntSimple',
   providers: [SimpleDataService]
 })
-export class simpleContainerDirective implements OnInit{
+export class SimpleContainerDirective implements OnInit{
 
   @Input() url!: string;
   @Input() querys: any = {};
@@ -33,7 +33,8 @@ export class simpleContainerDirective implements OnInit{
     this.created.emit(this.data$);
   } 
 
-  fresh() {
-    this.simple.fresh()
+  /** 刷新请求，可以传入新的请求参数 */
+  fresh(querys: any) {
+    this.simple.fresh(querys)
   }
 }
