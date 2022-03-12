@@ -1,5 +1,4 @@
 import { Type } from "@angular/core";
-import { BehaviorSubject } from "rxjs";
 
 /** 针对ng-treater/pagingDataWrapper分页查询逻辑的设置项 */
 export interface PagingSetting {  
@@ -24,6 +23,9 @@ export interface NgTreaterSetting {
   placeholder?: Type<DataLoadingStateTreater>;
   retryCounter?: number;
   method?: 'post' | 'get';
+  simple?: {
+    plucker: string[];
+  }
   paging: PagingSetting;
 }
 

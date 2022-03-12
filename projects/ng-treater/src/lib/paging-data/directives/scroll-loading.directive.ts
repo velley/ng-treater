@@ -42,7 +42,7 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
   } 
 
   ngOnInit() {
-    if(!this.pagingDataService) console.error('未找到PagingDatService服务, ScrollLoading指令无法生效')
+    if(!this.pagingDataService) console.error('未找到PagingDatService服务, ScrollLoading指令无法生效');
     this.insertLoadingDom();    
     this.bindScrollEvent();
     this.listenLoading();
@@ -90,8 +90,8 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
         takeUntil(this.end$)
       )
       .subscribe(state => {
-        //若当前请求的分页为第一页,且状态为pending或failed，应暂时隐藏底部加载提示
-        if(this.pagingDataService.isFirstPage && [NtLoadingState.PENDING, NtLoadingState.FAILED].includes(state)) {
+        //若当前请求的分页为第一页,且状态为pending/failed/empty，应暂时隐藏底部加载提示
+        if(this.pagingDataService.isFirstPage && [NtLoadingState.PENDING, NtLoadingState.FAILED, NtLoadingState.EMPTY].includes(state)) {
           this.loadingDom.style.display = 'none';
         } else {
           this.loadingDom.style.display = 'block';

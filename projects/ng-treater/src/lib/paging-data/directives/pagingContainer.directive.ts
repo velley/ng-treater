@@ -13,7 +13,7 @@ export class PagingContainerDirective  implements OnInit{
 
   @Input() url!: string;
   @Input() querys: any = {};
-  @Input() options: Partial<PagingSetting> = {};
+  @Input() options: Partial<PagingSetting & {method: 'post' | 'get'}> = {};
   @Output() created = new EventEmitter<Observable<any[]>>();
 
   data$!: ConnectableObservable<any[]>;  
@@ -57,11 +57,11 @@ export class PagingContainerDirective  implements OnInit{
   }
 
   fresh() {
-    this.paging.fresh()
+    this.paging.fresh();
   }
 
   reset() {
-    this.paging.reset()
+    this.paging.reset();
   }
 
   addFilter(params: any) {

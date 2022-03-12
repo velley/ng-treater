@@ -35,7 +35,7 @@ export class PagingDataService<D = any, F = Filter> {
   public  loadingState$                = new BehaviorSubject<NtLoadingState>(NtLoadingState.PENDING);
 
   get isFirstPage() {
-    return this.page.targetNo === this.settings.paging?.start;
+    return this.page?.targetNo === this.settings.paging?.start;
   }
 
   constructor(     
@@ -68,7 +68,7 @@ export class PagingDataService<D = any, F = Filter> {
     localPagingSetting && (this.settings.paging = {...this.settings.paging, ...localPagingSetting});
 
     // 初始化分页信息
-    this.page = {} as any;
+    if(!this.page) this.page = {} as any;
     this.page.pageNo    = this.page.targetNo = this.settings.paging?.start;
     this.page.pageSize  = this.settings.paging?.size;
 
@@ -194,7 +194,7 @@ export class PagingDataService<D = any, F = Filter> {
   /** 根据已有查询条件重新请求(页码不变) */
   fresh() {
     //滚动加载模式下页码与列表数据需要重置
-    if(this.settings.paging.scrollLoading) {
+    if(this.settings.paging?.scrollLoading) {
       this.page.targetNo = this.settings.paging.start;
       this.listCache   = [];
     } 
@@ -205,7 +205,7 @@ export class PagingDataService<D = any, F = Filter> {
   reset() {
     this.filters      = {}; 
     this.listCache    = [];
-    this.page.targetNo  = this.settings.paging.start;
+    this.page.targetNo  = this.settings.paging?.start;
     this.requestTo();
   }
 
