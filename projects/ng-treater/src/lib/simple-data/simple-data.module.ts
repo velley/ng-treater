@@ -10,7 +10,8 @@ import { SimpleContainerDirective } from './simpleContainer.directive';
     NtShareModule
   ],
   exports: [
-    SimpleContainerDirective
+    SimpleContainerDirective,
+    NtShareModule
   ]
 })
 export class SimpleDataModule { }
