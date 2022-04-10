@@ -29,7 +29,7 @@
     "@angular-devkit/build-angular": "~13.1.2",
     "@angular/cli": "~13.1.2",
     "@angular/compiler-cli": "^13.1.1",
-    "@docgeni/cli": "^1.2.0-next.10",
+    "@docgeni/cli": "^1.1.4",
     "@docgeni/template": "1.2.0-next.10",
     "@types/jasmine": "~3.6.0",
     "@types/jasminewd2": "^2.0.10",
