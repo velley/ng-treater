@@ -9,8 +9,8 @@ module.exports = {
     navs: [
         null,
         {
-            title: 'Components',
-            path: 'components',
+            title: '使用指南',
+            path: 'guides',
             lib: 'ng-treater',
             locales: {}
         }
@@ -18,12 +18,13 @@ module.exports = {
     libs: [
         {
             name: 'ng-treater',
-            rootDir: 'projects/ng-treater',
+            abbrName: 'nt',
+            rootDir: 'packages',
             include: [
                 'src',
-                'src/lib'
             ],
             categories: []
         }
-    ]
+    ],
+    defaultLocale: 'zh-cn'
 };

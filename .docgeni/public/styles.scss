@@ -1,0 +1,26 @@
+@import "~ng-zorro-antd/ng-zorro-antd.min.css";
+@import '@docgeni/template/styles/index.css';
+
+dg-component-overview .dg-example-viewer-header {display: none;}
+
+.dg-hero-launch h1 {
+  color: #fff;
+}
+.dg-hero-launch .dg-launch-description{
+  color: #ccc !important;
+  font-size: large !important;
+}
+
+.dg-hero::before {
+  content: "";
+  position: absolute;
+  background-image: url(https://material.angular.cn/angular-white-transparent.d4d5ed2946afa9f1.svg);
+  background-size: 600px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-repeat: no-repeat;
+  background-position: 80% 20px;
+  opacity: .2;
+}

@@ -1,0 +1,15 @@
+<div class="container" ntPagingContainer #paging="ntPaging" url="/api/getPagingData">
+  <div class="loading" *ngIf="(paging.state$ | async) === 'pending'">
+    分页数据加载中...
+  </div>
+  
+  <div class="list" *ngIf="(paging.state$ | async) !== 'pending'">
+    <div class="item" *ngFor="let item of paging.data$ | async">
+      {{item | json}}
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="fresh" (click)="paging.fresh()">刷新</button>
+  </div>  
+</div>

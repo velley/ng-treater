@@ -1,0 +1,27 @@
+<div class="container"  ntPagingContainer #paging="ntPaging" url="/api/getPagingData">
+  <nz-table 
+    [nzData]="paging.data$ | async" 
+    [nzShowPagination]="true" 
+    [nzFrontPagination]="false" 
+    [nzTotal]="paging.total"
+    [nzLoading]="(paging.state$ | async) === 'pending'"
+    (nzPageIndexChange)="paging.gotoPage($event)"
+  >
+    <thead>
+      <tr>
+        <th>名称</th>
+        <th>分组</th>
+        <th>排名</th>
+        <th>地址</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of paging.data$ | async">
+        <td >{{item.name}}</td>
+        <td >{{item.category}}</td>
+        <td >{{item.rank}}</td>
+        <td >{{item.address}}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</div>

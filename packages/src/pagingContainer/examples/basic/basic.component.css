@@ -1,0 +1,14 @@
+.item{
+  padding: 10px;
+  border-bottom: 1px solid #efefef;
+}
+
+.loading{
+  text-align: center;
+  color: #999;
+}
+
+.actions{
+  text-align: center;
+  margin-top: 20px;
+}

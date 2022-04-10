@@ -5,28 +5,28 @@
   "projects": {
     "ng-treater": {
       "projectType": "library",
-      "root": "projects/ng-treater",
-      "sourceRoot": "projects/ng-treater/src",
-      "prefix": "lib",
+      "root": "packages",
+      "sourceRoot": "packages/src",
+      "prefix": "nt",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/ng-treater/tsconfig.lib.json",
-            "project": "projects/ng-treater/ng-package.json"
+            "tsConfig": "packages/tsconfig.lib.json",
+            "project": "packages/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/ng-treater/tsconfig.lib.prod.json"
+              "tsConfig": "packages/tsconfig.lib.prod.json"
             }
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/ng-treater/src/test.ts",
-            "tsConfig": "projects/ng-treater/tsconfig.spec.json",
-            "karmaConfig": "projects/ng-treater/karma.conf.js"
+            "main": "packages/src/test.ts",
+            "tsConfig": "packages/tsconfig.spec.json",
+            "karmaConfig": "packages/karma.conf.js"
           }
         }
       }

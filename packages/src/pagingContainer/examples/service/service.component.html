@@ -1,0 +1,27 @@
+<div class="container">
+  <nz-table 
+    [nzData]="data" 
+    [nzShowPagination]="true" 
+    [nzFrontPagination]="false" 
+    [nzTotal]="total"
+    [nzLoading]="isLoading"
+    (nzPageIndexChange)="gotoPage($event)"
+  >
+    <thead>
+      <tr>
+        <th>名称</th>
+        <th>分组</th>
+        <th>排名</th>
+        <th>地址</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of data">
+        <td >{{item.name}}</td>
+        <td >{{item.category}}</td>
+        <td >{{item.rank}}</td>
+        <td >{{item.address}}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</div>

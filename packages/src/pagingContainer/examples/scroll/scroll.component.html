@@ -1,0 +1,7 @@
+<div class="container" ntPagingContainer #paging="ntPaging" url="/api/getPagingData" [options]="{scrollLoading: true}">
+  <div class="list" ntScrollLoading>
+    <div class="item" *ngFor="let item of paging.data$ | async">
+      {{item | json}}
+    </div>
+  </div>
+</div>
