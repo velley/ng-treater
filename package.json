@@ -3,7 +3,7 @@
   "version": "13.1.1",
   "scripts": {
     "ng": "ng",
-    "build:docs": "docgeni build --prod",
+    "build:docs": "docgeni build --prod --base-href=/ng-treater/",
     "start": "ng serve",
     "build": "ng build",
     "test": "ng test",

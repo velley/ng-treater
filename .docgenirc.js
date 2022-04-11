@@ -8,6 +8,7 @@ module.exports = {
     logoUrl: 'https://angular.cn/assets/images/logos/angular/shield-large.svg',
     description: '',
     docsDir: 'docs',
+    outputDir: 'docs',
     navs: [
         null,
         {
