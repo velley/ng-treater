@@ -4,6 +4,8 @@
 module.exports = {
     mode: 'lite',
     title: 'ng-treater',
+    theme: 'angular',
+    logoUrl: 'https://angular.cn/assets/images/logos/angular/shield-large.svg',
     description: '',
     docsDir: 'docs',
     navs: [

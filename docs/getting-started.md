@@ -1,19 +1,19 @@
 ---
-title: 总览
+title: 快速开始
 order: 1
 ---
 
-## 介绍
-ng-treater是基于angular与rxjs的数据查询插件，针对前后端数据请求场景，使用本插件可将该场景中的通用逻辑部分进行高度封装，并统一管理，例如请求数据的网络状态，分页请求的页码信息等。
+## ✍ 介绍
+ng-treater是基于angular与rxjs的数据查询插件，针对前后端数据请求场景，使用本插件可将该场景中的通用逻辑部分(例如请求数据的网络状态，分页请求的页码信息等)进行封装并统一管理。
 > 1. 本插件非组件库，仅提供若干指令与服务来实现相关功能。
-> 2. 本插件的请求依赖于angular官方的http模块，所以项目中为http配置的拦截器等功能也对插件内部的请求生效。
-## 下载ng-treater
+> 2. 本插件的网络请求依赖于angular官方的http模块，所以在项目中为http配置的拦截器等功能也对插件内部的请求生效。
+## ✍ 下载ng-treater
 
 ```
 npm i ng-treater -S
 ```
 
-## 引入模块NgTreaterModule
+## ✍ 引入模块NgTreaterModule
 ```ts
 import { NgTreaterModule } from 'ng-treater';
 
@@ -29,7 +29,7 @@ export class MyFeatureModule { }
 ```
 > 引入后即可在当前模块的组件中使用所有相关指令
 
-## 注入全局配置 
+## ✍ 提供全局配置 
 ng-treater需要你在应用根模块提供全局配置，例如分页请求字段名、默认请求方法、请求重试次数等等。
 
 ```ts

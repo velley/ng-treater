@@ -1,0 +1,33 @@
+<div><span class="token keyword">import</span> <span class="token punctuation">{</span> Component<span class="token punctuation">,</span> OnInit <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@angular/core'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> DataPlaceholderAccessor<span class="token punctuation">,</span> NtLoadingState <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'ng-treater'</span><span class="token punctuation">;</span>
+
+@<span class="token function">Component</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+  selector<span class="token punctuation">:</span> <span class="token string">'app-data-placeholder'</span><span class="token punctuation">,</span>
+  template<span class="token punctuation">:</span> <span class="token template-string"><span class="token string">`
+    &lt;div class="placeholder" >
+      &lt;nz-spin *ngIf="state === 'pending'">&lt;/nz-spin>
+      &lt;nz-empty *ngIf="state === 'empty'">&lt;/nz-empty>
+      &lt;nz-empty *ngIf="state === 'failed'" [nzNotFoundContent]="tpl" >
+        &lt;ng-template #tpl>
+          &lt;span class="error-tip">
+            请求失败，&lt;a (click)="retry()">点此重试&lt;/a>
+          &lt;/span>
+        &lt;/ng-template>
+      &lt;/nz-empty>
+    &lt;/div>
+  `</span></span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token keyword">export</span> <span class="token keyword">class</span> <span class="token class-name">DataPlaceholderComponent</span> <span class="token keyword">implements</span> <span class="token class-name">DataPlaceholderAccessor</span><span class="token punctuation">{</span>
+
+  state<span class="token operator">!</span><span class="token punctuation">:</span> NtLoadingState<span class="token punctuation">;</span>
+  retry<span class="token operator">!</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span>  <span class="token keyword">void</span><span class="token punctuation">;</span>
+
+  <span class="token function">writeState</span><span class="token punctuation">(</span>state<span class="token punctuation">:</span> NtLoadingState<span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span> <span class="token punctuation">{</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span>state <span class="token operator">=</span> state<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token function">registerRetryFunc</span><span class="token punctuation">(</span>fn<span class="token punctuation">:</span> <span class="token keyword">any</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span> <span class="token punctuation">{</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span>retry <span class="token operator">=</span> fn<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+<span class="token punctuation">}</span></div>

@@ -5,7 +5,6 @@ order: 2
 ---
 
 ## ✍ 基本使用
-该组件默认支持在对话框中展示，只需要注入服务HyFormModalService并调用create方法即可。
 
 <example name="nt-pagingContainer-basic-example" />
 
@@ -46,23 +45,23 @@ order: 2
 ```
 
 ## ✍ 使用PagingDataService服务
-指令pagingContainer内部的主要逻辑都基于PagingDataService服务，大部分情况下你不需要了解该服务的内部细节。但在少数场景，你需要直接使用服务来完成分页请求。
-> 因为指令pagingContainer会在视图初始化后自动执行请求，如果你需要精确控制请求时机，并且需要对请求返回的数据进行处理后才进行渲染，那么这时候就需要用到PagingDataService。
+指令pagingContainer内部的主要逻辑都基于PagingDataService服务，在少数场景，你需要直接使用服务来完成分页请求。
+> 因为指令pagingContainer会在视图初始化后自动执行请求，如果你需要精确控制请求时机，或者需要对请求返回的数据进行处理后才进行渲染，那么这时候就需要用到PagingDataService。
 
 <example name="nt-pagingContainer-service-example" />
 
 > 如上所示，PagingDataService可以完全替代指令pagingContainer；只需要调用create方法便能获取数据(create方法可传入3个参数，第二个参数为默认查询条件，第三个参数为分页配置)。<br>
-> 注意：需要在使用PagingDataService的组件元数据providers中提供该服务。
+> 注意：在使用PagingDataService的组件中，你需要通过元数据providers提供该服务。
 
 ## ✍ 滚动加载
 若想支持滚动加载场景，请在分页配置中将scrollLoading设为true;
 
 ```html
 <div ntPagingContainer #paging="ntPaging" url="/api/getPagingData" [querys]="{scrollLoading: true}">
-  <!-- 同理，也可以在appModule中更改全局配置 -->
+  <!-- 同理，如果你的项目中分页数据展示全部为滚动加载，也可以在appModule中更改全局配置 -->
 </div>
 ```
 
 <example name="nt-pagingContainer-scroll-example" />
 
-> 如上所示，只需要在容器元素上使用scrollLoading指令便可实现滚动加载的功能。
+> 如上所示，只需要在容器元素上使用scrollLoading指令便可实现滚动加载的功能（需要你自行为该元素设置overflow样式）。

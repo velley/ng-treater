@@ -13,7 +13,7 @@ export class PagingContainerDirective  implements OnInit{
 
   @Input() url!: string;
   @Input() querys: any = {};
-  @Input() options: Partial<PagingSetting & {method: 'post' | 'get'}> = {};
+  @Input() options: Partial<PagingSetting> = {};
   @Output() created = new EventEmitter<Observable<any[]>>();
 
   data$!: ConnectableObservable<any[]>;  
