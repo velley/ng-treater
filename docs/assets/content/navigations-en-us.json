@@ -1,0 +1,32 @@
+{
+  "navs": [
+    {
+      "id": "getting-started",
+      "path": "getting-started",
+      "channelPath": "",
+      "title": "Getting Started",
+      "order": 10,
+      "toc": "content",
+      "contentPath": "docs/getting-started.html",
+      "originPath": "docs/getting-started.md"
+    },
+    {
+      "title": "Components",
+      "path": "components",
+      "lib": "ng-treater",
+      "items": []
+    }
+  ],
+  "docs": [
+    {
+      "id": "getting-started",
+      "path": "getting-started",
+      "channelPath": "",
+      "title": "Getting Started",
+      "order": 10,
+      "toc": "content",
+      "contentPath": "docs/getting-started.html",
+      "originPath": "docs/getting-started.md"
+    }
+  ]
+}

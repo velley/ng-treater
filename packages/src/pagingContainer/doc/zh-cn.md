@@ -51,13 +51,13 @@ order: 2
 <example name="nt-pagingContainer-service-example" />
 
 > 如上所示，PagingDataService可以完全替代指令pagingContainer；只需要调用create方法便能获取数据(create方法可传入3个参数，第二个参数为默认查询条件，第三个参数为分页配置)。<br>
-> 注意：在使用PagingDataService的组件中，你需要通过元数据providers提供该服务。
+> 注意：1.在使用PagingDataService的组件中，你需要通过元数据providers提供该服务；2.create在整个分页数据查询周期内只能调用一次，后续要重新查询数据请使用服务实例的addFilter/fresh/reset等方法。
 
 ## ✍ 滚动加载
 若想支持滚动加载场景，请在分页配置中将scrollLoading设为true;
 
 ```html
-<div ntPagingContainer #paging="ntPaging" url="/api/getPagingData" [querys]="{scrollLoading: true}">
+<div ntPagingContainer #paging="ntPaging" url="/api/getPagingData" [options]="{scrollLoading: true}">
   <!-- 同理，如果你的项目中分页数据展示全部为滚动加载，也可以在appModule中更改全局配置 -->
 </div>
 ```

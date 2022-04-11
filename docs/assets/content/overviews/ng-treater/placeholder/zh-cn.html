@@ -1,0 +1,93 @@
+
+        <h2 id="✍-基本使用" class="docs-header-link">
+          <span header-link="✍-基本使用"></span>
+          ✍ 基本使用
+        </h2>
+      <p>dataPlaceholder指令用于请求数据暂未成功返回时的占位提示(请求中，请求失败，空数据)，需要与pagingContainer/simpleContainer结合使用(也可以将这两个指令替换为它们对应的服务，总之dataPlaceholder指令不能单独使用)</p>
+<example name="nt-placeholder-basic-example" ></example>
+
+<blockquote>
+<p>可以看到，设置datPlaceholder之后，界面会自动根据网络请求状态显示对应的占位提示。 <br>
+dataPlaceholder为结构性指令，不能与pagingContainer指令附加上同一个元素上，会导致无法拿到指令实例。</p>
+</blockquote>
+
+        <h2 id="✍-自定义占位提示" class="docs-header-link">
+          <span header-link="✍-自定义占位提示"></span>
+          ✍ 自定义占位提示
+        </h2>
+      <p>上面例子中，占位提示仅仅只是一段提示文本，如果需要展示特定的占位提示，可以编写自定义占位组件并传入ntTreaterSetting配置中。</p>
+<br>
+
+<blockquote>
+<p>自定义占位组件代码示例如下，使用了ng-zorro的empty与spin组件来渲染占位提示</p>
+</blockquote>
+<pre class="language-ts"><code class="language-ts"><div><span class="token keyword">import</span> <span class="token punctuation">{</span> Component<span class="token punctuation">,</span> OnInit <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'@angular/core'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> DataPlaceholderAccessor<span class="token punctuation">,</span> NtLoadingState <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'ng-treater'</span><span class="token punctuation">;</span>
+
+@<span class="token function">Component</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+  selector<span class="token punctuation">:</span> <span class="token string">'app-data-placeholder'</span><span class="token punctuation">,</span>
+  template<span class="token punctuation">:</span> <span class="token template-string"><span class="token string">`
+    &lt;div class="placeholder" fxFill>
+      &lt;nz-spin *ngIf="state === 'pending'">&lt;/nz-spin>
+      &lt;nz-empty *ngIf="state === 'empty'">&lt;/nz-empty>
+      &lt;nz-empty *ngIf="state === 'failed'"
+        nzNotFoundImage="assets/404.png"
+        [nzNotFoundContent]="tpl"
+      >
+        &lt;ng-template #tpl>
+          &lt;span class="error-tip">
+            请求失败，&lt;a (click)="retry()">点此重试&lt;/a>
+          &lt;/span>
+        &lt;/ng-template>
+      &lt;/nz-empty>
+    &lt;/div>
+  `</span></span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token keyword">export</span> <span class="token keyword">class</span> <span class="token class-name">DataPlaceholderComponent</span> <span class="token keyword">implements</span> <span class="token class-name">DataPlaceholderAccessor</span><span class="token punctuation">{</span>
+
+  state<span class="token operator">!</span><span class="token punctuation">:</span> NtLoadingState<span class="token punctuation">;</span>
+  retry<span class="token operator">!</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">></span>  <span class="token keyword">void</span><span class="token punctuation">;</span>
+
+  <span class="token function">writeState</span><span class="token punctuation">(</span>state<span class="token punctuation">:</span> NtLoadingState<span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span> <span class="token punctuation">{</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span>state <span class="token operator">=</span> state<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token function">registerRetryFunc</span><span class="token punctuation">(</span>fn<span class="token punctuation">:</span> <span class="token keyword">any</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span> <span class="token punctuation">{</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span>retry <span class="token operator">=</span> fn<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+<span class="token punctuation">}</span></div></code></pre>
+<br>
+
+<blockquote>
+<p>将组件传入NtTreaterSetting配置</p>
+</blockquote>
+<pre class="language-ts"><code class="language-ts"><div><span class="token keyword">import</span> <span class="token punctuation">{</span> NG_TREATER_SETTINGS<span class="token punctuation">,</span>  NgTreaterSetting <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'ng-treater'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> DataPlaceholderComponent <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./components/data-placeholder/data-placeholder.component'</span><span class="token punctuation">;</span>
+@<span class="token function">NgModule</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+  declarations<span class="token punctuation">:</span> <span class="token punctuation">[</span>
+    <span class="token comment" spellcheck="true">//...</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  imports<span class="token punctuation">:</span> <span class="token punctuation">[</span>
+    <span class="token comment" spellcheck="true">//...</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  providers<span class="token punctuation">:</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">{</span>provide<span class="token punctuation">:</span> NG_TREATER_SETTINGS<span class="token punctuation">,</span> useValue<span class="token punctuation">:</span> <span class="token operator">&lt;</span>NgTreaterSetting<span class="token operator">></span><span class="token punctuation">{</span>
+      placeholder<span class="token punctuation">:</span> DataPlaceholderComponent<span class="token punctuation">,</span>
+      paging<span class="token punctuation">:</span> <span class="token punctuation">{</span>
+        <span class="token comment" spellcheck="true">//...</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      simple<span class="token punctuation">:</span> <span class="token punctuation">{</span>
+        <span class="token comment" spellcheck="true">//...</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">}</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  bootstrap<span class="token punctuation">:</span> <span class="token punctuation">[</span>AppComponent<span class="token punctuation">]</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token keyword">export</span> <span class="token keyword">class</span> <span class="token class-name">AppModule</span> <span class="token punctuation">{</span> <span class="token punctuation">}</span></div></code></pre>
+<br>
+
+<blockquote>
+<p>实际效果</p>
+</blockquote>
+<example name="nt-placeholder-custome-example" ></example>

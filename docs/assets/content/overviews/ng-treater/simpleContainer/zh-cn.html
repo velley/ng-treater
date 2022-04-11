@@ -1,0 +1,15 @@
+
+        <h2 id="使用场景" class="docs-header-link">
+          <span header-link="使用场景"></span>
+          使用场景
+        </h2>
+      <p>该指令可以理解为简化版的pagingContainer，用于非分页数据的请求，除了没有分页相关api外，整体使用方式与pagingContainer基本相同，直接参考pagingContainer中的示例即可。</p>
+<blockquote>
+<p>simpleContainer也有一个对应的服务simpleDataService，可以使用该服务进行替代使用。
+由于适用于非分页数据请求场景，所以scrollLoading指令在此时无效；但dataPlaceholder指令仍然适用。</p>
+</blockquote>
+<br>
+
+<pre class="language-html"><code class="language-html"><div><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">ntSimpleContainer</span> <span class="token attr-name">#simple</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>ntSimple<span class="token punctuation">"</span></span> <span class="token attr-name">url</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>/api/getData<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+  <span class="token comment" spellcheck="true">&lt;!-- 你的渲染节点 --></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span></div></code></pre>
