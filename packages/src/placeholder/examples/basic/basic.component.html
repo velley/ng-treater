@@ -1,4 +1,4 @@
-<div class="container" ntPagingContainer #paging="ntPaging" url="/api/getPagingData">  
+<div class="container" ntPagingContainer #paging="ntPaging" url="/api/getPagingData2">  
   <span style="color: #888;font-size: small;">*可以点击刷新查看不同效果</span>
   <ng-container *ntDataPlaceHolder>
     <div class="list" *ngIf="(paging.state$ | async) !== 'pending'">

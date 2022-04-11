@@ -1,3 +1,9 @@
+---
+title: 快速开始
+subtitle: pagingContainer
+order: 0
+---
+
 ## <div align="center">👉NG-TREATER👈</div>
 ### <div align="center">供angular开发者使用的分页查询插件</div>
 

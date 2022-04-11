@@ -15,7 +15,7 @@ setup({
   timeout: 3000
 })
 
-mock(/\/api\/getPagingData/, 'post', () => {
+mock(/\/api\/getPagingData2/, 'post', () => {
   const rand = Math.random();
   if(rand>0.5) {
     return mock({

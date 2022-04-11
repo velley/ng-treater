@@ -25,7 +25,7 @@ order: 2
 
 > 1.addFilter方法会将每次传入的查询数据保存，并与新的查询数据进行合并后发起请求。若想清除查询条件，可以调用reset方法。 <br>
 > 2.可以发现，在表格进入第2页之后点击查询按钮，数据返回后分页器会自动重置为第1页。这是因为pagingContainer内部会自行管理分页状态，表格组件只需要访问其page属性即可实时获取分页信息。<br>
-> 3.可以通过指令的querys属性传入默认的查询条件，指令在第一次发起请求时便会带上该条件作为参数；且该条件不会被reset方法清楚。示例如下：
+> 3.可以通过指令的querys属性传入默认的查询条件，指令在第一次发起请求时便会带上该条件作为参数；且该条件不会被reset方法清除。示例如下：
 ```html
 <div class="container" ntPagingContainer #paging="ntPaging" url="/api/getPagingData" [querys]="{code: 1}">
   <!-- ... -->
