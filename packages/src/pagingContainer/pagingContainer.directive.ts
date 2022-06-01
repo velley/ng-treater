@@ -1,4 +1,4 @@
-import { Directive, EventEmitter, Input, OnInit, Optional, Output, Self } from "@angular/core";
+import { Directive, EventEmitter, Input, OnChanges, OnInit, Optional, Output, Self, SimpleChanges } from "@angular/core";
 import { ConnectableObservable, Observable } from "rxjs";
 import { PagingSetting } from "../interface";
 import { PagingDataService } from "../paging-data.service";
@@ -9,7 +9,7 @@ import { ScrollLoadingDirective } from "../scrollLoading/scroll-loading.directiv
   exportAs: 'ntPaging',
   providers: [PagingDataService]
 })
-export class PagingContainerDirective  implements OnInit{
+export class PagingContainerDirective  implements OnInit, OnChanges {
 
   @Input() url!: string;
   @Input() querys: any = {};
@@ -43,6 +43,13 @@ export class PagingContainerDirective  implements OnInit{
     this.data$ = this.paging.create(this.url, this.querys, {scrollLoading: !!this.scroller, ...this.options });
     this.created.emit(this.data$);
   } 
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const { querys } = changes;
+    if(querys) {
+      this.paging.defaultQuerys = querys.currentValue;
+    }
+  }
 
   nextPage() {
     this.paging.nextPage();

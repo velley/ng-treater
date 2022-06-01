@@ -25,7 +25,7 @@ export class ScrollLoadingDirective implements OnInit, OnDestroy {
   loadingDom!: HTMLElement;
   loadingDomRef!: ComponentRef<ScrollLoadingBox>;
   loadingState$!: BehaviorSubject<NtLoadingState>; 
-  end$ = new Subject()
+  end$ = new Subject();
 
   constructor(
     private el: ElementRef,

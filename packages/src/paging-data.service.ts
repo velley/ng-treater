@@ -26,13 +26,14 @@ interface Filter {
 @Injectable()
 export class PagingDataService<D = any, F = Filter> {  
  
-  private filters: Filter              = {};
+  private filters: Filter                    = {};
   private settings!: NgTreaterSetting;
-  private listCache: D[]               = [];  
-  private requester$                   = new Subject<Filter> ();
+  private listCache: D[]                     = [];  
+  private requester$                         = new Subject<Filter> ();
   public  page!: Page;
-  public  total: number                = 0;
-  public  loadingState$                = new BehaviorSubject<NtLoadingState>(NtLoadingState.PENDING);
+  public  total: number                      = 0;
+  public  defaultQuerys: Record<string, any> = {};
+  public  loadingState$                      = new BehaviorSubject<NtLoadingState>(NtLoadingState.PENDING);
 
   get isFirstPage() {
     return this.page?.targetNo === this.settings.paging?.start;
@@ -74,6 +75,9 @@ export class PagingDataService<D = any, F = Filter> {
     this.page.pageNo    = this.page.targetNo = this.settings.paging?.start;
     this.page.pageSize  = this.settings.paging?.size;
 
+    //保存默认查询条件
+    this.defaultQuerys = defaultQuerys;
+
     // 创建requeter$与publisher$
     const publisher$
       = this.requester$
@@ -85,10 +89,10 @@ export class PagingDataService<D = any, F = Filter> {
               switch(method) {
                 default:
                 case 'post':
-                  requestMap$ = this.http.post<any>(url, {...defaultQuerys, ...param});
+                  requestMap$ = this.http.post<any>(url, {...this.defaultQuerys, ...param});
                 break;
                 case 'get':
-                  requestMap$ = this.http.get<any>(url, {params:{...defaultQuerys, ...param}});
+                  requestMap$ = this.http.get<any>(url, {params:{...this.defaultQuerys, ...param}});
                 break;
               }        
               return requestMap$
