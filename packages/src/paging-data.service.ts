@@ -26,6 +26,7 @@ interface Filter {
 @Injectable()
 export class PagingDataService<D = any, F = Filter> {  
  
+  private url!: string;
   private filters: Filter                    = {};
   private settings!: NgTreaterSetting;
   private listCache: D[]                     = [];  
@@ -65,7 +66,8 @@ export class PagingDataService<D = any, F = Filter> {
    * @param defaultQuerys 默认请求参数(每次请求都会带上该参数，不会被reset方法清空)
    * @param localPagingSetting 本地分页设置，可覆盖全局设置
   */
-  create(url: string, defaultQuerys: Filter = {}, localPagingSetting?: Partial<PagingSetting>) {    
+  create(url: string, defaultQuerys: Filter = {}, localPagingSetting?: Partial<PagingSetting & {manual?: boolean}>) {
+    this.url = url;    
     // 合并配置
     this.globalSetting && (this.settings = {...this.settings, ...this.globalSetting});
     localPagingSetting && (this.settings.paging = {...this.settings.paging, ...localPagingSetting});
@@ -89,10 +91,10 @@ export class PagingDataService<D = any, F = Filter> {
               switch(method) {
                 default:
                 case 'post':
-                  requestMap$ = this.http.post<any>(url, {...this.defaultQuerys, ...param});
+                  requestMap$ = this.http.post<any>(this.url, {...this.defaultQuerys, ...param});
                 break;
                 case 'get':
-                  requestMap$ = this.http.get<any>(url, {params:{...this.defaultQuerys, ...param}});
+                  requestMap$ = this.http.get<any>(this.url, {params:{...this.defaultQuerys, ...param}});
                 break;
               }        
               return requestMap$
@@ -121,7 +123,7 @@ export class PagingDataService<D = any, F = Filter> {
           ) as Observable<unknown> as ConnectableObservable<D[]>
 
     publisher$.connect();
-    this.requestTo();
+    !localPagingSetting?.manual && this.requestTo();
     return publisher$;
   }
 
@@ -150,7 +152,7 @@ export class PagingDataService<D = any, F = Filter> {
   /** 添加查询条件
    * @param querys 需要传入的json查询对象，传入后会被一直保存(可调用reset方法清空)
    */
-  addFilter(querys: F) {
+  addFilter(querys: Filter) {
     this.page.targetNo  = this.settings.paging.start; //筛选条件改变时，页码重置为初始值
     this.filters = Object.assign(this.filters, querys);
     this.listCache    = [];
@@ -188,6 +190,20 @@ export class PagingDataService<D = any, F = Filter> {
     this.requestTo();
   }
 
+  /** 改变默认查询条件 */
+  changeDefaultQuerys(querys: Record<string, any>, type?: 'refresh' | 'reset') {
+    this.defaultQuerys = querys;
+    type === 'refresh' && this.refresh();
+    type === 'reset' && this.reset();
+  }
+
+  /** 改变请求url */
+  changeUrl(url: string, type?: 'refresh' | 'reset') {
+    this.url = url;
+    type === 'refresh' && this.refresh();
+    type === 'reset' && this.reset();
+  }
+
   /** 重试(在某次请求失败时，手动调用此方法重新发送请求) */
   retry() {
     if(this.loadingState$.value === NtLoadingState.FAILED) {
@@ -205,6 +221,11 @@ export class PagingDataService<D = any, F = Filter> {
       this.listCache   = [];
     } 
     this.requestTo();
+  }
+
+  /** 根据已有查询条件重新请求(页码重置为初始页) */
+  refresh() {
+    this.addFilter({});
   }
 
   /** 重置(清除查询条件并重置页码，重新发送数据请求) */

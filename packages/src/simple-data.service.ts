@@ -15,6 +15,7 @@ interface SimpleQuerys {
 @Injectable()
 export class SimpleDataService<D = any> {  
  
+  private url!: string;
   private settings!: Partial<NgTreaterSetting>;
   private requester$    = new Subject<SimpleQuerys>();
   private querys        = {} as SimpleQuerys;
@@ -39,6 +40,8 @@ export class SimpleDataService<D = any> {
    * @param localPagingSetting 本地分页设置，可覆盖全局设置
   */
   create(url: string, defaultQuerys: any = {}, localSetting?: Partial<NgTreaterSetting['simple']>) {    
+    this.url = url;
+    
     // 合并配置
     this.globalSetting && (this.settings = {...this.settings, ...this.globalSetting});
     localSetting && (this.settings.simple = {...this.settings.simple, ...localSetting});

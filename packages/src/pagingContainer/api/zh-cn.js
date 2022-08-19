@@ -1,7 +1,7 @@
 
 module.exports = [
   {
-    type: 'component',
+    type: 'directive',
     name: 'ntPagingContainer',
     properties: [
       {
@@ -15,6 +15,12 @@ module.exports = [
         type: 'object',
         default: "{}",
         description: '初始化请求参数'
+      },
+      {
+        name: 'manual',
+        type: 'boolean',
+        default: "false",
+        description: '是否手动控制请求时机，默认为false,初始化时会自动创建paging实例并发送请求'
       },
       {
         name: 'options',
