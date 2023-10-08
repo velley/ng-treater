@@ -2,6 +2,8 @@ import { Type } from "@angular/core";
 
 /** 针对ng-treater/pagingDataWrapper分页查询逻辑的设置项 */
 export interface PagingSetting {  
+  /** 请求方法 */
+  method?: 'get' | 'post';
   /** 每页条数 */
   size: number;
   /** 起始页索引 */
@@ -18,15 +20,17 @@ export interface PagingSetting {
   scrollLoading: boolean;
 }
 
+export interface SimpleSetting {
+  method?: 'post' | 'get';
+  plucker?: string[];
+}
+
 /** 针对ng-treater的全局设置项 */
 export interface NgTreaterSetting {  
   placeholder?: Type<DataLoadingStateTreater>;
   retryCounter?: number;
-  method?: 'post' | 'get';
-  simple?: {
-    plucker: string[];
-  }
-  paging: PagingSetting;
+  simple?: SimpleSetting;
+  paging?: PagingSetting;
 }
 
 /** 自定义Placeholder组件需要继承的接口 */
