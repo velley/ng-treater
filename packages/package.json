@@ -1,6 +1,6 @@
 {
-  "name": "ng-treater",
-  "version": "13.2.6",
+  "name": "@haoyi/ng-treater",
+  "version": "13.2.7",
   "peerDependencies": {
     "@angular/common": "^13.1.1",
     "@angular/core": "^13.1.1"
@@ -10,5 +10,8 @@
   },
   "devDependencies": {
     "@types/mockjs": "^1.0.6"
+  },
+  "publishConfig": {
+    "registry": "http://172.16.1.144:8081/nexus/repository/local-npm/"
   }
 }

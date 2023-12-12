@@ -25,7 +25,7 @@ export interface Page{
 }
 
 interface Filter {  
-  [prop: string]: string | number | boolean | ReadonlyArray<string | number | boolean>;
+  [prop: string]: any;
 }
 
 const DEFAULT_PAGE_SETTING: PagingSetting = {
