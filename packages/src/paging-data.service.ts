@@ -6,19 +6,38 @@ import { NG_TREATER_SETTINGS } from './injection';
 import { NtLoadingState, NgTreaterSetting, PagingSetting } from './interface';
 
 export interface Page{
+  /** 初始页码索引 */
+  start: number,
   /** 当前所在页码 */
-  pageNo:number,
+  pageIndex:number,
   /** 当前页数量 */
   pageSize: number,  
   /** 数据总量 */
   total: number,
   /** 目标页码(指即将发送请求的页码) */
-  targetNo: number
+  targetNo: number,
+  /** 页数字段名称 */
+  indexKey: string,
+  /** 页码长度字段名称 */
+  sizeKey: string
+  /** 是否为滚动分页加载 */
+  scrollLoading: boolean
 }
 
 interface Filter {  
-  [prop: string]: any;
+  [prop: string]: string | number | boolean | ReadonlyArray<string | number | boolean>;
 }
+
+const DEFAULT_PAGE_SETTING: PagingSetting = {
+  method: 'post',
+  dataPlucker: ['data'],
+  totalPlucker: ['total'],
+  size: 10,
+  start: 1,
+  indexKey: 'pageIndex',
+  sizeKey: 'pageSize',
+  scrollLoading: false
+};
 
 /*
   对分页数据查询的http请求与处理逻辑可托管给此服务
@@ -27,8 +46,8 @@ interface Filter {
 export class PagingDataService<D = any, F = Filter> {  
  
   private url!: string;
+  private publisher$!: ConnectableObservable<D[]>;
   private filters: Filter                    = {};
-  private settings!: NgTreaterSetting;
   private listCache: D[]                     = [];  
   private requester$                         = new Subject<Filter> ();
   public  page!: Page;
@@ -37,26 +56,14 @@ export class PagingDataService<D = any, F = Filter> {
   public  loadingState$                      = new BehaviorSubject<NtLoadingState>(NtLoadingState.PENDING);
 
   get isFirstPage() {
-    return this.page?.targetNo === this.settings.paging?.start;
+    return this.page?.targetNo === DEFAULT_PAGE_SETTING.start;
   }
 
   constructor(     
     private http: HttpClient,
     @Optional() @Inject(NG_TREATER_SETTINGS) private globalSetting: NgTreaterSetting
   ) {
-    this.settings = {
-      retryCounter: 1,
-      paging: {
-        dataPlucker: ['data'],
-        totalPlucker: ['total'],
-        size: 10,
-        start: 1,
-        indexKey: 'pageNo',
-        sizeKey: 'pageSize',
-        scrollLoading: false,
-        method: 'post'
-      }
-    };
+    
   }  
 
   /** 
@@ -67,27 +74,36 @@ export class PagingDataService<D = any, F = Filter> {
    * @param localPagingSetting 本地分页设置，可覆盖全局设置
   */
   create(url: string, defaultQuerys: Filter = {}, localPagingSetting?: Partial<PagingSetting & {manual?: boolean}>) {
-    this.url = url;    
-    // 合并配置
-    this.globalSetting && (this.settings = {...this.settings, ...this.globalSetting});
-    localPagingSetting && (this.settings.paging = {...this.settings.paging, ...localPagingSetting});
+    this.url = url;        
+    if(this.publisher$) {
+      console.warn('在单个实例中PagingDataService.create方法只能调用一次');
+      return this.publisher$;
+    }
 
-    // 初始化分页信息
-    if(!this.page) this.page = {} as any;
-    this.page.pageNo    = this.page.targetNo = this.settings.paging?.start;
-    this.page.pageSize  = this.settings.paging?.size;
+    // 初始化分页配置信息
+    this.page = {} as Page;
+    this.page.start         = localPagingSetting?.start || this.globalSetting.paging?.start || DEFAULT_PAGE_SETTING.start;
+    this.page.pageIndex     = this.page.targetNo = localPagingSetting?.size || this.globalSetting.paging?.size || DEFAULT_PAGE_SETTING.size;
+    this.page.pageSize      = localPagingSetting?.start || this.globalSetting.paging?.start || 1;
+    this.page.indexKey      = localPagingSetting?.indexKey || this.globalSetting.paging?.indexKey || DEFAULT_PAGE_SETTING.indexKey;
+    this.page.sizeKey       = localPagingSetting?.sizeKey || this.globalSetting.paging?.sizeKey || DEFAULT_PAGE_SETTING.sizeKey;
+    this.page.scrollLoading = localPagingSetting?.scrollLoading || this.globalSetting.paging?.scrollLoading || DEFAULT_PAGE_SETTING.scrollLoading;
+
+    const dataPlucker   = localPagingSetting?.dataPlucker || this.globalSetting.paging?.dataPlucker || DEFAULT_PAGE_SETTING.dataPlucker;
+    const totalPlucker  = localPagingSetting?.totalPlucker || this.globalSetting.paging?.totalPlucker || DEFAULT_PAGE_SETTING.totalPlucker;    
+    const method        = localPagingSetting?.method || this.globalSetting.paging?.method || DEFAULT_PAGE_SETTING.method;   
+    const retryCounter  = this.globalSetting.retryCounter || 0; 
 
     //保存默认查询条件
     this.defaultQuerys = defaultQuerys;
 
     // 创建requeter$与publisher$
-    const publisher$
+    this.publisher$
       = this.requester$
           .pipe(                    
             tap( _ =>  this.loadingState$.next(NtLoadingState.PENDING)),
             switchMap( param => {
-              let requestMap$: Observable<any>;
-              const method = localPagingSetting?.method;
+              let requestMap$: Observable<any>;    
               switch(method) {
                 default:
                 case 'post':
@@ -99,40 +115,39 @@ export class PagingDataService<D = any, F = Filter> {
               }        
               return requestMap$
                 .pipe(
-                  retry(this.settings.retryCounter),
+                  retry(retryCounter),
                   tap( _ => {
-                    //注意：这里是在请求成功后才会更新当前页码值,所以不应在其他方法中更改pageNo
-                    this.page.pageNo = param[this.settings.paging.indexKey]; 
+                    //注意：这里是在请求成功后才会更新当前页码值,所以不应在其他方法中更改pageIndex
+                    this.page.pageIndex = param[this.page.indexKey] as number; 
                   }, _ => {
                     this.loadingState$.next(NtLoadingState.FAILED)
                   }),    
                   catchError(_ => new Subject<unknown>())
                 )
-            }),  
-            // filter( res => Boolean(res)),       
+            }),    
             tap<any>( res => {              
-              of(res).pipe(pluck<unknown, number>(...this.settings.paging.totalPlucker))
+              of(res).pipe(pluck<unknown, number>(...totalPlucker))
                 .subscribe(num => this.total = num)
             }), 
-            pluck<unknown, D[]>( ...this.settings.paging.dataPlucker || [] ),
+            pluck<unknown, D[]>( ...dataPlucker || [] ),
             tap( data => this.loadingState$.next(this.getLoadingState(data.length)) ),             
             filter( data => Boolean(data.length) || (!data.length && this.isFirstPage) ),
-            map( data => this.settings.paging.scrollLoading ? this.listCache.concat(data) : data ),            
+            map( data => this.page.scrollLoading ? this.listCache.concat(data) : data ),            
             tap( (data: any) => this.listCache = data,),
             multicast(new BehaviorSubject([]))                   
           ) as Observable<unknown> as ConnectableObservable<D[]>
 
-    publisher$.connect();
+    this.publisher$.connect();
     !localPagingSetting?.manual && this.requestTo();
-    return publisher$;
+    return this.publisher$;
   }
 
   /** 根据服务端返回的列表数据长度和分页信息来得到当前的请求状态 */
   private getLoadingState(length: number): NtLoadingState {
     if(length === 0 && this.isFirstPage) return NtLoadingState.EMPTY;
-    if(length === this.settings.paging.size) {
+    if(length === this.page.pageSize) {
       return NtLoadingState.SUCCESS
-    } else if(length < this.settings.paging.size) {
+    } else if(length < this.page.pageSize) {
       return NtLoadingState.END
     } else {
       return NtLoadingState.SUCCESS
@@ -141,8 +156,8 @@ export class PagingDataService<D = any, F = Filter> {
 
   private requestTo() {
     let pagingQuerys: any = { };
-    pagingQuerys[this.settings.paging.indexKey] =  this.page.targetNo || this.page.pageNo;
-    pagingQuerys[this.settings.paging.sizeKey]  =  this.page.pageSize;
+    pagingQuerys[this.page.indexKey] =  this.page.targetNo || this.page.pageIndex;
+    pagingQuerys[this.page.sizeKey]  =  this.page.pageSize;
     this.requester$.next({      
       ...pagingQuerys,
       ...this.filters
@@ -152,8 +167,8 @@ export class PagingDataService<D = any, F = Filter> {
   /** 添加查询条件
    * @param querys 需要传入的json查询对象，传入后会被一直保存(可调用reset方法清空)
    */
-  addFilter(querys: Filter) {
-    this.page.targetNo  = this.settings.paging.start; //筛选条件改变时，页码重置为初始值
+  addFilter(querys: F | {}) {
+    this.page.targetNo  = this.page.start; //筛选条件改变时，页码重置为初始值
     this.filters = Object.assign(this.filters, querys);
     this.listCache    = [];
     if( querys === null ) this.filters = {};
@@ -162,20 +177,20 @@ export class PagingDataService<D = any, F = Filter> {
 
   /** 加载下一页数据 */
   nextPage() {      
-    this.page.targetNo = this.page.pageNo + 1;
+    this.page.targetNo = this.page.pageIndex + 1;
     this.requestTo();
   }
 
   /** 加载上一页数据(滚动加载场景下无效) */
   previousPage() {    
     if(this.isFirstPage) return;
-    this.page.targetNo = this.page.pageNo - 1;
+    this.page.targetNo = this.page.pageIndex - 1;
     this.requestTo();
   }
 
   /** 加载指定页数据(滚动加载场景下无效) */ 
   gotoPage(num: number) {
-    if(!this.settings.paging.scrollLoading) {   
+    if(!this.page.scrollLoading) {   
       this.page.targetNo = num;   
       this.requestTo();
     } else {
@@ -185,7 +200,7 @@ export class PagingDataService<D = any, F = Filter> {
 
   /** 改变页码长度(pageSize) */
   changeSize(size: number) {
-    this.page.pageNo   = this.settings.paging.start;
+    this.page.pageIndex   = this.page.start;
     this.page.pageSize = size;
     this.requestTo();
   }
@@ -216,8 +231,8 @@ export class PagingDataService<D = any, F = Filter> {
   /** 根据已有查询条件重新请求(页码不变) */
   fresh() {
     //滚动加载模式下页码与列表数据需要重置
-    if(this.settings.paging?.scrollLoading) {
-      this.page.targetNo = this.settings.paging.start;
+    if(this.page?.scrollLoading) {
+      this.page.targetNo = this.page.start;
       this.listCache   = [];
     } 
     this.requestTo();
@@ -232,7 +247,7 @@ export class PagingDataService<D = any, F = Filter> {
   reset() {
     this.filters      = {}; 
     this.listCache    = [];
-    this.page.targetNo  = this.settings.paging?.start;
+    this.page.targetNo  = this.page?.start;
     this.requestTo();
   }
 

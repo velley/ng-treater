@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, Optional, Inject } from '@angular/core';
 import { switchMap, multicast, tap, catchError, pluck, retry } from 'rxjs/operators';
 import { NG_TREATER_SETTINGS } from './injection';
-import { NtLoadingState, NgTreaterSetting } from './interface';
+import { NtLoadingState, NgTreaterSetting, SimpleSetting } from './interface';
 
 interface SimpleQuerys {
   [prop: string]: number | string
@@ -26,10 +26,10 @@ export class SimpleDataService<D = any> {
     @Optional() @Inject(NG_TREATER_SETTINGS) private globalSetting: NgTreaterSetting
   ) {
     this.settings = {
-      retryCounter: 1,
+      retryCounter: 1,      
       simple: {
-        plucker: ['data'],
-        method: 'get'
+        method: 'get',
+        plucker: ['data']
       }
     };
   }  
@@ -39,13 +39,11 @@ export class SimpleDataService<D = any> {
    * @param defaultQuerys 默认请求参数(每次请求都会带上该参数，不会被reset方法清空)
    * @param localPagingSetting 本地分页设置，可覆盖全局设置
   */
-  create(url: string, defaultQuerys: any = {}, localSetting?: Partial<NgTreaterSetting['simple']>) {    
-    this.url = url;
-    
+  create(url: string, defaultQuerys: any = {}, localSetting?: SimpleSetting) {    
     // 合并配置
     this.globalSetting && (this.settings = {...this.settings, ...this.globalSetting});
-    localSetting && (this.settings.simple = {...this.settings.simple, ...localSetting});
-    
+    localSetting && (this.settings = {...this.settings, ...{simple: localSetting}});
+
     // 创建requeter$与publisher$
     const publisher$
       = this.requester$
@@ -53,7 +51,7 @@ export class SimpleDataService<D = any> {
             tap( _ =>  this.loadingState$.next(NtLoadingState.PENDING)),
             switchMap( querys => {
               let requestMap$: Observable<any>;
-              const method = localSetting?.method;
+              const method = this.settings.simple?.method || 'get';
               switch(method) {
                 default:
                 case 'post':
