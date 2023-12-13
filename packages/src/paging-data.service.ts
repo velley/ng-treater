@@ -25,7 +25,7 @@ export interface Page{
 }
 
 interface Filter {  
-  [prop: string]: any;
+  [prop: string]: string | number | boolean | null | undefined | ReadonlyArray<string | number | boolean>;
 }
 
 const DEFAULT_PAGE_SETTING: PagingSetting = {
@@ -83,8 +83,8 @@ export class PagingDataService<D = any, F = Filter> {
     // 初始化分页配置信息
     this.page = {} as Page;
     this.page.start         = localPagingSetting?.start || this.globalSetting.paging?.start || DEFAULT_PAGE_SETTING.start;
-    this.page.pageIndex     = this.page.targetNo = localPagingSetting?.size || this.globalSetting.paging?.size || DEFAULT_PAGE_SETTING.size;
-    this.page.pageSize      = localPagingSetting?.start || this.globalSetting.paging?.start || 1;
+    this.page.pageIndex     = this.page.targetNo = localPagingSetting?.start || this.globalSetting.paging?.start || DEFAULT_PAGE_SETTING.start;
+    this.page.pageSize      = localPagingSetting?.size || this.globalSetting.paging?.size || 10;
     this.page.indexKey      = localPagingSetting?.indexKey || this.globalSetting.paging?.indexKey || DEFAULT_PAGE_SETTING.indexKey;
     this.page.sizeKey       = localPagingSetting?.sizeKey || this.globalSetting.paging?.sizeKey || DEFAULT_PAGE_SETTING.sizeKey;
     this.page.scrollLoading = localPagingSetting?.scrollLoading || this.globalSetting.paging?.scrollLoading || DEFAULT_PAGE_SETTING.scrollLoading;
@@ -243,9 +243,9 @@ export class PagingDataService<D = any, F = Filter> {
     this.addFilter({});
   }
 
-  /** 重置(清除查询条件并重置页码，重新发送数据请求) */
-  reset() {
-    this.filters      = {}; 
+  /** 重置(清除查询条件并重置页码，重新发送数据请求，可传入新的查询条件作为下一轮的请求参数) */
+  reset(filters?: Filter) {
+    this.filters      = filters || {}; 
     this.listCache    = [];
     this.page.targetNo  = this.page?.start;
     this.requestTo();
