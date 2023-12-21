@@ -9,6 +9,11 @@ interface SimpleQuerys {
   [prop: string]: number | string
 }
 
+const DEFAULT_SIMPLE_SETTING = {
+  method: 'get',
+  plucker: ['data']
+}
+
 /*
   对非分页数据查询的http请求与处理逻辑可托管给此服务
 */
@@ -40,9 +45,10 @@ export class SimpleDataService<D = any> {
    * @param localPagingSetting 本地分页设置，可覆盖全局设置
   */
   create(url: string, defaultQuerys: any = {}, localSetting?: SimpleSetting) {    
-    // 合并配置
-    this.globalSetting && (this.settings = {...this.settings, ...this.globalSetting});
-    localSetting && (this.settings = {...this.settings, ...{simple: localSetting}});
+    // 初始化配置信息
+    const plucker  = localSetting?.plucker || this.globalSetting.simple?.plucker || DEFAULT_SIMPLE_SETTING.plucker;    
+    const method        = localSetting?.method || this.globalSetting.paging?.method || DEFAULT_SIMPLE_SETTING.method;   
+    const retryCounter  = this.globalSetting.retryCounter || 0; 
 
     // 创建requeter$与publisher$
     const publisher$
@@ -51,12 +57,11 @@ export class SimpleDataService<D = any> {
             tap( _ =>  this.loadingState$.next(NtLoadingState.PENDING)),
             switchMap( querys => {
               let requestMap$: Observable<any>;
-              const method = this.settings.simple?.method || 'get';
-              switch(method) {
-                default:
+              switch(method) {                
                 case 'post':
                   requestMap$ = this.http.post<any>(url, {...defaultQuerys, ...querys});
                 break;
+                default:
                 case 'get':
                   requestMap$ = this.http.get<any>(url, {params:{...defaultQuerys, ...querys}});
                 break;
@@ -72,7 +77,7 @@ export class SimpleDataService<D = any> {
                   catchError(_ => new Subject<unknown>())
                 )
             }),  
-            pluck<unknown, never[]>( ...this.settings.simple?.plucker || []),    
+            pluck<unknown, never[]>( ...plucker),    
             multicast(new BehaviorSubject([]))                   
           ) as Observable<unknown> as ConnectableObservable<D>
 
