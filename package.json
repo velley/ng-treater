@@ -1,6 +1,6 @@
 {
   "name": "ng-treater",
-  "version": "14.2.9",
+  "version": "14.3.11",
   "scripts": {
     "ng": "ng",
     "build:docs": "docgeni build --prod --base-href=./",

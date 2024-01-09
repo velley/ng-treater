@@ -46,8 +46,8 @@ export class SimpleDataService<D = any> {
   */
   create(url: string, defaultQuerys: any = {}, localSetting?: SimpleSetting) {    
     // 初始化配置信息
-    const plucker  = localSetting?.plucker || this.globalSetting.simple?.plucker || DEFAULT_SIMPLE_SETTING.plucker;    
-    const method        = localSetting?.method || this.globalSetting.paging?.method || DEFAULT_SIMPLE_SETTING.method;   
+    const plucker       = localSetting?.plucker || this.globalSetting.simple?.plucker || DEFAULT_SIMPLE_SETTING.plucker;    
+    const method        = localSetting?.method || this.globalSetting.simple?.method || DEFAULT_SIMPLE_SETTING.method;   
     const retryCounter  = this.globalSetting.retryCounter || 0; 
 
     // 创建requeter$与publisher$

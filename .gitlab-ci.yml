@@ -1,0 +1,71 @@
+# This file is a template, and might need editing before it works on your project.
+# To contribute improvements to CI/CD templates, please follow the Development guide at:
+# https://docs.gitlab.com/ee/development/cicd/templates.html
+# This specific template is located at:
+# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Pages/HTML.gitlab-ci.yml
+
+# Full project: https://gitlab.com/pages/plain-html
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH 
+    - if: $CI_COMMIT_TAG
+
+stages:
+  - version
+  - install
+  - deploy
+
+cache:
+  paths:
+    - node_modules
+
+version:
+  tags:
+    - [hy-k8s-runner]
+  stage: version
+  retry: 1
+  image: node:16
+  rules:
+    - if: $CI_COMMIT_BRANCH
+  before_script:    
+    - git remote set-url --push origin http://${GITLAB_USER_LOGIN}:${token}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - git config --global user.name $GITLAB_USER_LOGIN
+    - git config --global user.email $GITLAB_USER_EMAIL
+    - git checkout -b $CI_COMMIT_BRANCH  
+    - npm config set registry https://registry.npm.taobao.org
+    - npm config set @haoyi:registry http://172.16.1.144:8081/nexus/repository/group-npm/
+    - npm i @haoyi/cli standard-version -g     
+  script:
+    - cd packages && haoyi version -e $CI_COMMIT_BRANCH
+  after_script:
+    - if [ $CI_COMMIT_BRANCH == "release" ]; then
+        echo "通过合并请求将release版本同步至dev分支";
+        curl --request POST --header "PRIVATE-TOKEN:$token" "http://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/merge_requests?source_branch=release&target_branch=dev&title=将RELEASE版本同步至DEV分支";       
+        echo "n/即将删除dev分支的相关tag";
+        git tag|grep "dev"|xargs git push origin --delete tag;        
+      fi
+
+
+install:
+  stage: install
+  image: node:16
+  tags: [hy-k8s-runner]
+  script: npm install --legacy-peer-deps
+
+pages:
+  stage: deploy
+  image: node:16
+  tags: [hy-k8s-runner]
+  script:
+    - npm run build:docs
+  artifacts:
+    paths:
+      - public
+
+publish:
+  stage: deploy
+  image: node:16
+  tags: [hy-k8s-runner]
+  script:
+    - cd dist/ng-treater
+    - npm publish
